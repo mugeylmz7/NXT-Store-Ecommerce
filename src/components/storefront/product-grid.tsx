@@ -37,7 +37,7 @@ export async function ProductGrid({ category, sort }: ProductGridProps) {
           priceCents={product.priceCents}
           currency={product.currency}
           category={product.category as ProductCategory}
-          imageUrl={product.imageUrls[0]}
+          imageUrls={product.imageUrls}
         />
       ))}
     </div>

@@ -57,6 +57,9 @@ export async function getStorefrontProducts(
 ): Promise<Product[]> {
   try {
     const records = await prisma.product.findMany({
+      where: {
+        isActive: true, //Anasayfada sadece aktif ürünleri göstermek için filtreleme
+      },
       orderBy: { createdAt: "desc" },
     });
     return records.map(toProduct);

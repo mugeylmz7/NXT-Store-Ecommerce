@@ -84,9 +84,9 @@ export async function createProduct(
   }
 
   const imageUrls = await Promise.all(
-    imagesParsed.data.map(async (imageFile) => {
-      const blob = await put(imageFile.name, imageFile, {
-        access: 'public',
+    imagesParsed.data.map(async (file) => {
+      const blob = await put(`products/${Date.now()}-${file.name}`, file, {
+        access: "public",
         addRandomSuffix: true,
         // Bilgisayarımızda OIDC çakışmasını engellemek için doğrudan .env dosyasındaki tokenı kullanmasını emrediyoruz:
         token: process.env.BLOB_READ_WRITE_TOKEN, 

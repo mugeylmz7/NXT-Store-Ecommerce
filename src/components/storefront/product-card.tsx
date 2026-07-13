@@ -21,7 +21,7 @@ type ProductCardProps = {
   priceCents: number;
   currency: string;
   category: ProductCategory;
-  imageUrl?: string;
+  imageUrls?: string[];
 };
 
 export function ProductCard({
@@ -31,22 +31,27 @@ export function ProductCard({
   priceCents,
   currency,
   category,
-  imageUrl,
+  imageUrls,
 }: ProductCardProps) {
   const priceLabel = formatPrice(
     priceCents,
     currency as Currency,
   );
 
+  // Eğer bir array geldiyse, kartta göstermek için İLK RESMİ seçiyoruz
+  // Eğer array boşsa veya tanımsızsa undefined dönerek güvenliğe alıyoruz
+  const mainImageUrl = imageUrls && imageUrls.length > 0 ? imageUrls[0] : undefined;
+
   return (
     <Card className="overflow-hidden">
-      <div className="relative aspect-4/3 bg-muted">
-        {imageUrl ? (
+      <div className="relative w-full h-64 overflow-hidden bg-white rounded-t-lg p-2">
+        {mainImageUrl ? (
           <Image
-            src={imageUrl}
+            src={mainImageUrl}
             alt={name}
             fill
-            className="object-cover"
+            // 🟢 En kritik değişim: Tailwind yerine doğrudan Next.js'in resmi stil prop'unu verdik
+            style={{ objectFit: "contain", objectPosition: "center" }}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority
           />
