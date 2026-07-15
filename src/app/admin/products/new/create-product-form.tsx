@@ -239,7 +239,7 @@ export function CreateProductForm() {
         </label>
       </section>
 
-      <div className="flex items-center gap-3 border-t border-border pt-6">
+        <div className="flex items-center gap-3 border-t border-border pt-6">
         <Button type="submit" disabled={isPending}>
           {isPending ? "Creating product..." : "Create product"}
         </Button>

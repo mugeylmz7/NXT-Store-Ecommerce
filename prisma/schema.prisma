@@ -29,6 +29,21 @@ model Product {
   @@map("products")
 }
 
+// Yeni ekleyeceğimiz User modeli (Profil bilgilerini tutmak için):
+model User {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  auth0Id    String   @unique  // Auth0'dan gelen benzersiz kullanıcı ID'si
+  email      String   @unique
+  name       String?
+  address    String?
+  city       String?
+  postalCode String?
+  country    String?
+  phone      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 enum Currency {
   EUR
   GBP

@@ -9,10 +9,10 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:bg-chart-5 dark:hover:bg-primary/90 dark:hover:text-primary-foreground/90 dark:focus-visible:ring-primary/50 dark:active:bg-primary/90 ",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
-        outline: "border border-input bg-background shadow-sm hover:shadow-md hover:bg-accent hover:text-accent-foreground",
-        ghost: "hover:bg-accent hover:text-accent-foreground shadow-sm hover:shadow-md",
+        default: "bg-primary text-primary-foreground shadow-sm hover:shadow-md hover:bg-chart-5 dark:hover:bg-primary/90 dark:hover:text-primary-foreground/90 dark:focus-visible:ring-primary/50 dark:active:bg-primary/90 hover:scale-105 transition-transform duration-200 cursor-pointer",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90 hover:scale-105 transition-transform duration-200 cursor-pointer",
+        outline: "border border-input bg-background shadow-sm hover:shadow-md hover:bg-accent hover:text-accent-foreground dark:text-foreground dark:hover:bg-ring dark:hover:text-accent-foreground hover:scale-105 transition-transform duration-200 cursor-pointer",
+        ghost: "hover:bg-accent hover:text-accent-foreground shadow-sm hover:shadow-md hover:scale-105 transition-transform duration-200",
         link: "text-primary hover:text-chart-5",
       },
       size: {
