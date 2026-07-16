@@ -25,6 +25,8 @@ model Product {
   isActive    Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  stripeProductId String?  // Stripe için yeni eklenen alanlar (isteğe bağlı/optional yapıyoruz ki mevcut veriler patlamasın)
+  stripePriceId String?
 
   @@map("products")
 }
