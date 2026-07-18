@@ -1,4 +1,3 @@
-
 // A: Yönetici Token'ı Almak (getManagementToken)
 async function getManagementToken() {
   // Auth0 Domain, M2M Client ID ve Client Secret bilgilerini .env dosyasından okuyoruz

@@ -37,7 +37,7 @@ export async function updateUserProfile(formdata: FormData) {
   try {
     // A. Önce Auth0 tarafındaki bilgileri (isim ve mail) güncelliyoruz
     await updateAuth0UserProfile(user.sub, { name, email });
-    
+
     // B. Sonra MongoDB tarafındaki ismi ve email'i güncelliyoruz
     await prisma.user.update({
       where: { auth0Id: user.sub },
@@ -54,7 +54,6 @@ export async function updateUserProfile(formdata: FormData) {
 
 
 // 2. Adres Bilgilerini Sadece MongoDB'de Güncelleme Action'ı
-
 export async function updateUserAddress(formdata: FormData) {
 
   const user = await getSessionUser();
@@ -68,7 +67,7 @@ export async function updateUserAddress(formdata: FormData) {
   const country = formdata.get("country");
   const phone = formdata.get("phone");
 
-// Doğrulamalar (Validation)
+  // Doğrulamalar (Validation)
   if (typeof address !== "string" || !address.trim()) {
     throw new Error("Address is required.");
   }
@@ -93,7 +92,7 @@ export async function updateUserAddress(formdata: FormData) {
       },
     });
 
-    revalidatePath("/user/profile"); // Sayfayı yenilemek için revalidatePath kullanıyoruz
+    revalidatePath("/user/profile");
   } catch (error) {
     console.error("Error updating user address:", error);
     throw new Error("Failed to update user address");

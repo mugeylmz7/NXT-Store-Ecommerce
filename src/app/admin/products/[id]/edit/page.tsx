@@ -21,8 +21,7 @@ async function handleEditAction(productId: string, currentImageUrls: string[], f
   const description = formData.get("description") as string;
   const priceCents = parseInt(formData.get("priceCents") as string) || 0;
   const stock = parseInt(formData.get("stock") as string) || 0;
-  
-  // 🟢 Prisma Enum hatasını engellemek için gelen veriyi büyük harfe çevirip veya hocanın tipine zorlayarak alıyoruz
+
   const rawCategory = formData.get("category") as string;
   const category = rawCategory as ProductCategory;
 
@@ -98,7 +97,7 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
         </CardHeader>
         <CardContent>
           <form action={editActionWithArgs} encType="multipart/form-data" className="space-y-4">
-            
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Product Name</label>
               <Input name="name" defaultValue={product.name} required />
@@ -123,9 +122,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category</label>
-                {/* 🟢 Option value değerlerini hem küçük hem büyük ihtimalini kapsayacak şekilde güncelledik */}
-                <select 
-                  name="category" 
+                {/* Option value değerlerini hem küçük hem büyük ihtimalini kapsayacak şekilde güncelliyoruz */}
+                <select
+                  name="category"
                   defaultValue={product.category}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 >
@@ -139,8 +138,8 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
-                <select 
-                  name="isActive" 
+                <select
+                  name="isActive"
                   defaultValue={product.isActive ? "true" : "false"}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 >
@@ -160,10 +159,10 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
                 <label className="text-sm font-medium block">Current Images ({product.imageUrls.length})</label>
                 <div className="flex gap-2 overflow-x-auto p-2 bg-muted/50 rounded-lg">
                   {product.imageUrls.map((url, index) => (
-                    <img 
-                      key={index} 
-                      src={url} 
-                      alt="product" 
+                    <img
+                      key={index}
+                      src={url}
+                      alt="product"
                       className="w-16 h-16 object-cover rounded border border-border bg-background"
                     />
                   ))}
