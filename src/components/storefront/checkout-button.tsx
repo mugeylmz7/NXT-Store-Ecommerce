@@ -16,8 +16,8 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
   const [loading, setLoading] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [isInCart, setIsInCart] = useState(false); // Ürün sepette mi kontrolü için
-  
-  
+
+
   const [toast, setToast] = useState({ show: false, msg: "", type: "success" as "success" | "info" | "error" });
 
   // Özel Toast State'i (Göze hitap eden modern uyarılar için)
@@ -109,19 +109,18 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
   };
 
 
-return (
+  return (
     <>
       {toast.show && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 animate-in fade-in zoom-in-95 slide-in-from-top-10 duration-300 rounded-2xl border px-6 py-4 shadow-2xl min-w-[320px] max-w-md bg-background font-medium text-sm text-foreground">
-          <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white font-bold text-xs ${
-            toast.type === "success" ? "bg-emerald-500 shadow-lg shadow-emerald-500/30" : 
-            toast.type === "info" ? "bg-blue-500 shadow-lg shadow-blue-500/30" : 
-            "bg-destructive shadow-lg shadow-destructive/30"
-          }`}>
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-2xl border border-border/85 px-6 py-4 shadow-2xl min-w-[320px] max-w-md bg-background font-medium text-sm text-foreground transition-all duration-300">
+          <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white font-bold text-xs ${toast.type === "success" ? "bg-emerald-500 shadow-md" :
+              toast.type === "info" ? "bg-blue-500 shadow-md" :
+                "bg-destructive shadow-md"
+            }`}>
             {toast.type === "success" ? "✓" : toast.type === "info" ? "i" : "!"}
           </div>
           <div className="flex flex-col gap-0.5">
-            <p className="font-semibold text-foreground text-sm tracking-tight">
+            <p className="font-semibold text-sm tracking-tight">
               {toast.type === "success" ? "Success" : toast.type === "info" ? "Notification" : "Error"}
             </p>
             <p className="text-xs text-muted-foreground leading-relaxed">
@@ -134,9 +133,9 @@ return (
       {/* MOD 1: SEPETE EKLE BUTONU (KART İÇİNDEKİ) */}
       {mode === "add-to-cart" && (
         <form onSubmit={handleAddToCart}>
-          <Button 
-            type="submit" 
-            variant="outline" 
+          <Button
+            type="submit"
+            variant="outline"
             className="w-full"
           >
             Add to Cart
@@ -147,9 +146,9 @@ return (
       {/* Eğer ürün sepetteyse görünecek olan kibar "Remove" butonu */}
       {mode === "remove-item" && isInCart && (
         <form onSubmit={handleRemoveItem}>
-          <Button 
-            type="submit" 
-            variant="ghost" 
+          <Button
+            type="submit"
+            variant="ghost"
             className="w-full border borcer-input text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-50"
           >
             Remove
@@ -160,9 +159,9 @@ return (
       {/* MOD 2: SEPETİ SIFIRLA BUTONU */}
       {mode === "clear-cart" && (
         <form onSubmit={handleClearCart} className="w-full">
-          <Button 
-            type="submit" 
-            variant="ghost" 
+          <Button
+            type="submit"
+            variant="ghost"
             className="w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-xl active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-50"
           >
             Reset Cart
@@ -173,10 +172,10 @@ return (
       {/* MOD 3: PREMİUM CHECKOUT BUTTON (STRIPE TETİKLEYİCİ) */}
       {mode === "checkout-cart" && (
         <form onSubmit={handleCartCheckout} className="w-full">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             disabled={loading}
-            variant="default" 
+            variant="default"
             className="w-full shadow-md shadow-primary/10 rounded-xl active:scale-[0.98] transition-all duration-200 disabled:opacity-50"
           >
             {loading ? (
