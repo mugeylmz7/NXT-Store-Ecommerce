@@ -73,18 +73,12 @@ export function ProductCard({
       <CardFooter className="border-t border-border pt-4 flex items-center justify-between gap-2">
         <div className="flex flex-col">
           <p className="text-lg font-semibold text-foreground">{priceLabel}</p>
-          
-          {/* Eğer ürün sepetteyse hemen fiyatın altında "Remove" yazısı belirecek */}
-          <CheckoutButton 
-            mode="remove-item" 
-            productInfo={{ stripePriceId: stripePriceId || '', name: name }} 
-          />
         </div>
-        
+
         <div className="w-32">
-          <CheckoutButton 
-            mode="add-to-cart" 
-            productInfo={{ stripePriceId: stripePriceId || '', name: name }} 
+          <CheckoutButton
+            mode="add-to-cart"
+            productInfo={{ stripePriceId: stripePriceId || '', name: name }}
           />
         </div>
       </CardFooter>
