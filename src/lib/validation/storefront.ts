@@ -4,7 +4,7 @@ import { ProductSort } from "@/types/product";
 
 import { productCategorySchema } from "./product";
 
-export const productSortSchema = z.enum(ProductSort);
+export const productSortSchema = z.nativeEnum(ProductSort);
 
 export const storefrontCategoryFilterSchema = z.union([
   z.literal("all"),
