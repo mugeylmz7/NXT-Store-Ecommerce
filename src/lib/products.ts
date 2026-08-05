@@ -138,7 +138,10 @@ export function parseStorefrontFilters(
   const { category, sort } =
     parseStorefrontFiltersFromSearchParams(searchParams);
 
-  return { categoryValue: category as ProductCategory | "all", sortValue: sort };
+  return { 
+  categoryValue: category as ProductCategory | "all", 
+  sortValue: sort as ProductSort 
+};
 }
 
 // delete products
