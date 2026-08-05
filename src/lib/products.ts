@@ -119,9 +119,15 @@ export async function updateProduct(
   id: string,
   data: Partial<CreateProductData> & { imageUrls?: string[]; isActive?: boolean }
 ): Promise<Product> {
+
+  const { currency, category, ...rest } = data;
   const record = await prisma.product.update({
     where: { id },
-    data,
+    data: {
+      ...rest,
+      ...(currency && { currency: currency as Currency }),
+      ...(category && { category: category as ProductCategory }),
+    },
   });
   return toProduct(record);
 }
