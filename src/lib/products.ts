@@ -107,6 +107,7 @@ export async function createProduct(
     data: {
       ...data,
       currency: data.currency as Currency,
+      category: data.category as ProductCategory,
       imageUrls,
     },
   });
