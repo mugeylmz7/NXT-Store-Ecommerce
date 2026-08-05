@@ -96,7 +96,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
 
           <div className="pt-2">
             <Button
-              type="submit"
+              type="submit" variant="default"
               onClick={(e) => {
                 // Formun geçerliliğini kontrol et
                 const form = e.currentTarget.closest("form");
@@ -191,7 +191,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
 
           <div className="pt-2">
             <Button
-              type="submit"
+              type="submit" variant="default"
               onClick={(e) => {
                 // Formun geçerliliğini kontrol et
                 const form = e.currentTarget.closest("form");

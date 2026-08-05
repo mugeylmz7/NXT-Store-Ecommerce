@@ -29,16 +29,10 @@ export default async function Header (){
               {userIsAdmin && (
                 <Button variant="link" asChild>
                   <Link href="/admin" className="text-sm font-medium hover:underline dark:text-primary">
-                    Admin Panel
+                    Admin Dashboard
                   </Link>
                 </Button>
               )}
-
-              <Button variant="default" asChild>
-                <Link href="/profile" className="text-sm font-medium">
-                  Profile
-                </Link>
-              </Button>
 
               <Button variant="outline" asChild>
                 <a href="/auth/logout">Log out</a>

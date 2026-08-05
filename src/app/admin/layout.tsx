@@ -1,8 +1,9 @@
+import { AdminSidebar } from "@/components/layout/admin-sidebar";
 import { requireAdmin } from "@/lib/auth0";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ecommerce Admin",
+  title: "Admin",
   description: "Admin ecommerce platform",
 };
 
@@ -11,13 +12,12 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-
-// Sayfa veya altındaki herhangi bir bileşen render edilmeden önce admin kontrolü yapılır
   await requireAdmin();
+
   return (
-    <>
-      {/* Eğer yetki varsa, içerik burada gösterilir */}
-      {children}
-    </>
+    <div className="flex min-h-[calc(100vh-3.5rem)] flex-1">
+      <AdminSidebar />
+      <div className="flex-1 overflow-auto">{children}</div>
+    </div>
   );
 }
