@@ -4,13 +4,24 @@ import { getSessionUser } from "@/lib/auth0";
 import { updateAuth0UserProfile } from "@/lib/auth0Management";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { updateUserProfileService, updateUserAddressService } from "@/services/userService";
 
-// E-posta format doğrulaması için Regex
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-// Telefon numarası doğrulaması (Sadece rakam, isteğe bağlı boşluk/parantez ve 10-15 hane arası)
-const PHONE_REGEX = /^\+?[0-9\s\-()]{10,15}$/;
-// Posta kodu doğrulaması (Tam olarak 5 haneli rakam)
-const POSTAL_CODE_REGEX = /^\d{5}$/;
+// Zod şemaları ile form verilerini doğrulamak için kullanıyoruz
+const profileSchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters long"),
+  email: z.string().trim().email("Please enter a valid email address."),
+});
+
+
+const addressSchema = z.object({
+  address: z.string().trim().min(1, "Address is required."),
+  city: z.string().trim().optional(),
+  postalCode: z.string().trim().regex(/^\d{5}$/, "Postal code must be exactly 5 digits."),
+  country: z.string().trim().optional(),
+  phone: z.string().trim().regex(/^\+?[0-9\s\-()]{10,15}$/, "Please enter a valid phone number."),
+});
+
 
 
 // 1. Hesap Bilgilerini (İsim ve E-posta) Hem Auth0'da Hem MongoDB'de Güncelleme Action'ı
@@ -21,29 +32,21 @@ export async function updateUserProfile(formdata: FormData) {
     throw new Error("User not authenticated");
   }
 
+ const rawData = {
+  name : formdata.get("name"),
+  email : formdata.get("email"),
+};
 
-  const name = formdata.get("name");
-  const email = formdata.get("email");
-
-  // Doğrulamalar (Validation)
-  if (typeof name !== "string" || !name.trim() || name.trim().length < 2) {
-    throw new Error("Name is required and must be at least 2 characters long");
-  }
-
-  if (typeof email !== "string" || !EMAIL_REGEX.test(email)) {
-    throw new Error("Please enter a valid email address.");
-  }
+const validatedData = profileSchema.parse(rawData); 
 
   try {
     // A. Önce Auth0 tarafındaki bilgileri (isim ve mail) güncelliyoruz
-    await updateAuth0UserProfile(user.sub, { name, email });
-    
-    // B. Sonra MongoDB tarafındaki ismi ve email'i güncelliyoruz
-    await prisma.user.update({
-      where: { auth0Id: user.sub },
-      data: { name, email },
+    await updateAuth0UserProfile(user.sub, { 
+      name: validatedData.name,
+      email: validatedData.email
     });
-
+    
+    await updateUserProfileService(user.sub, validatedData); // B. MongoDB tarafında da güncelleme yapıyoruz
 
     revalidatePath("/user/profile"); // Sayfayı yenilemek için revalidatePath kullanıyoruz
   } catch (error) {
@@ -54,7 +57,6 @@ export async function updateUserProfile(formdata: FormData) {
 
 
 // 2. Adres Bilgilerini Sadece MongoDB'de Güncelleme Action'ı
-
 export async function updateUserAddress(formdata: FormData) {
 
   const user = await getSessionUser();
@@ -62,35 +64,24 @@ export async function updateUserAddress(formdata: FormData) {
     throw new Error("User not authenticated");
   }
 
-  const address = formdata.get("address");
-  const city = formdata.get("city");
-  const postalCode = formdata.get("postalCode");
-  const country = formdata.get("country");
-  const phone = formdata.get("phone");
+  const rawData = {
+    address: formdata.get("address") as string,
+    city: formdata.get("city") as string,
+    postalCode: formdata.get("postalCode") as string,
+    country: formdata.get("country") as string,
+    phone: formdata.get("phone") as string,
+  };
 
-// Doğrulamalar (Validation)
-  if (typeof address !== "string" || !address.trim()) {
-    throw new Error("Address is required.");
-  }
+  const validatedData = addressSchema.parse(rawData);
 
-  if (typeof postalCode !== "string" || !POSTAL_CODE_REGEX.test(postalCode)) {
-    throw new Error("Postal code must be exactly 5 digits.");
-  }
-
-  if (phone && (typeof phone !== "string" || !PHONE_REGEX.test(phone))) {
-    throw new Error("Please enter a valid phone number.");
-  }
 
   try {
-    await prisma.user.update({
-      where: { auth0Id: user.sub },
-      data: {
-        address: address as string,
-        city: city as string,
-        postalCode: postalCode as string,
-        country: country as string,
-        phone: phone as string,
-      },
+    await updateUserAddressService(user.sub, {
+        address: validatedData.address,
+        city: validatedData.city || "",
+        postalCode: validatedData.postalCode || "",
+        country: validatedData.country || "",
+        phone: validatedData.phone || "",
     });
 
     revalidatePath("/user/profile"); // Sayfayı yenilemek için revalidatePath kullanıyoruz
