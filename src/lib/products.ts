@@ -106,6 +106,7 @@ export async function createProduct(
   const record = await prisma.product.create({
     data: {
       ...data,
+      currency: data.currency as Currency,
       imageUrls,
     },
   });
