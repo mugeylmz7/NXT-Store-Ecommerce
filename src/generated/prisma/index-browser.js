@@ -154,7 +154,8 @@ exports.Prisma.QueryMode = {
 exports.Currency = exports.$Enums.Currency = {
   EUR: 'EUR',
   GBP: 'GBP',
-  TRY: 'TRY'
+  TRY: 'TRY',
+  USD: 'USD'
 };
 
 exports.Category = exports.$Enums.Category = {

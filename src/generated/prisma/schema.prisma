@@ -49,6 +49,7 @@ enum Currency {
   EUR
   GBP
   TRY
+  USD
 }
 
 enum Category {

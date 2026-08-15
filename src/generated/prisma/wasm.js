@@ -126,7 +126,8 @@ exports.Prisma.QueryMode = {
 exports.Currency = exports.$Enums.Currency = {
   EUR: 'EUR',
   GBP: 'GBP',
-  TRY: 'TRY'
+  TRY: 'TRY',
+  USD: 'USD'
 };
 
 exports.Category = exports.$Enums.Category = {
@@ -180,7 +181,6 @@ const config = {
     "db"
   ],
   "activeProvider": "mongodb",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
@@ -189,8 +189,8 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Product {\n  id          String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name        String\n  description String\n  priceCents  Int // smallest currency unit: 1999 = 19.99 in the given currency\n  currency    Currency @default(EUR)\n  category    Category\n  stock       Int      @default(0)\n  imageUrls   String[] // URLs returned by Vercel Blob\n  isActive    Boolean  @default(false)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@map(\"products\")\n}\n\n// Yeni ekleyeceğimiz User modeli (Profil bilgilerini tutmak için):\nmodel User {\n  id         String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  auth0Id    String   @unique // Auth0'dan gelen benzersiz kullanıcı ID'si\n  email      String   @unique\n  name       String?\n  address    String?\n  city       String?\n  postalCode String?\n  country    String?\n  phone      String?\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n}\n\nenum Currency {\n  EUR\n  GBP\n  TRY\n}\n\nenum Category {\n  ELECTRONICS\n  CLOTHING\n  HOME\n  SPORTS\n  OTHER\n}\n",
-  "inlineSchemaHash": "3cbdd12a2666aa5e4bc25c52650e7ea09f7e3a3d62fe7f6c7356adac1500aa7c",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Product {\n  id          String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name        String\n  description String\n  priceCents  Int // smallest currency unit: 1999 = 19.99 in the given currency\n  currency    Currency @default(EUR)\n  category    Category\n  stock       Int      @default(0)\n  imageUrls   String[] // URLs returned by Vercel Blob\n  isActive    Boolean  @default(false)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@map(\"products\")\n}\n\n// Yeni ekleyeceğimiz User modeli (Profil bilgilerini tutmak için):\nmodel User {\n  id         String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  auth0Id    String   @unique // Auth0'dan gelen benzersiz kullanıcı ID'si\n  email      String   @unique\n  name       String?\n  address    String?\n  city       String?\n  postalCode String?\n  country    String?\n  phone      String?\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n}\n\nenum Currency {\n  EUR\n  GBP\n  TRY\n  USD\n}\n\nenum Category {\n  ELECTRONICS\n  CLOTHING\n  HOME\n  SPORTS\n  OTHER\n}\n",
+  "inlineSchemaHash": "762700d7153246c4d55ca0ba18009c8aa6e1bde998073432d89a3b4005241886",
   "copyEngine": true
 }
 config.dirname = '/'

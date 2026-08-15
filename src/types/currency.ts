@@ -3,6 +3,7 @@ export enum Currency {
   EUR = "EUR",
   GBP = "GBP",
   TRY = "TRY",
+  USD = "USD",
 }
 
 export const EU_CURRENCY_OPTIONS: { value: Currency; label: string }[] = [

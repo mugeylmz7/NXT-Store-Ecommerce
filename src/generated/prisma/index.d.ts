@@ -31,7 +31,8 @@ export namespace $Enums {
   export const Currency: {
   EUR: 'EUR',
   GBP: 'GBP',
-  TRY: 'TRY'
+  TRY: 'TRY',
+  USD: 'USD'
 };
 
 export type Currency = (typeof Currency)[keyof typeof Currency]
