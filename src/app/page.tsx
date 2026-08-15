@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ProductCatalog } from "../components/storefront/product-catalog";
 import Link from "next/link";
-import { getSessionUser } from "@/lib/auth0";
+import { getSessionUser } from "@/lib/auth0-utils";
 
 type HomePageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;

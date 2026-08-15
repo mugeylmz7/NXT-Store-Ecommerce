@@ -1,6 +1,6 @@
 'use server';
 
-import { getSessionUser } from "@/lib/auth0";
+import { getSessionUser } from "@/lib/auth0-utils";
 import { updateAuth0UserProfile } from "@/lib/auth0Management";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
