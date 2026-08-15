@@ -10,6 +10,7 @@ import { ProductCategory } from '@/types/product';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { uploadProductImagesService } from '@/services/imageService';
+import { stripe } from "@/lib/stripe";
 
 export type CreateProductFormValues = {
   name: string;
