@@ -12,6 +12,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   // Kullanıcı oturumunu çekiyoruz
   const user = await getSessionUser();
+
 // 1. DURUM: Kullanıcı Giriş Yapmamışsa (Sadece Ortalanmış Hoş Geldiniz Ekranı)
   if (!user) {
     return (
@@ -56,7 +57,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
       <hr className="border-muted" />
 
-      {/* 2. BÖLÜM: ÜRÜN KATALOĞU (Asıl İçerik) */}
+      {/* ÜRÜN KATALOĞU (Asıl İçerik) */}
       <div className="space-y-4">
         <div className="space-y-1">
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">

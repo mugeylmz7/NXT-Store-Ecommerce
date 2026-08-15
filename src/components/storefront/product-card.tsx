@@ -1,5 +1,4 @@
 import Image from "next/image";
-
 import { Badge } from "../ui/badge";
 import {
   Card,
@@ -13,6 +12,7 @@ import {
   formatCategoryLabel,
   type ProductCategory,
 } from "../../types/product";
+import { CheckoutButton } from "./checkout-button";
 
 type ProductCardProps = {
   id: string;
@@ -22,6 +22,7 @@ type ProductCardProps = {
   currency: string;
   category: ProductCategory;
   imageUrls?: string[];
+  stripePriceId?: string; // Her ürün için Stripe Price ID'si ekledik
 };
 
 export function ProductCard({
@@ -32,6 +33,7 @@ export function ProductCard({
   currency,
   category,
   imageUrls,
+  stripePriceId,
 }: ProductCardProps) {
   const priceLabel = formatPrice(
     priceCents,
@@ -50,7 +52,7 @@ export function ProductCard({
             src={mainImageUrl}
             alt={name}
             fill
-            // 🟢 En kritik değişim: Tailwind yerine doğrudan Next.js'in resmi stil prop'unu verdik
+            // En kritik değişim: Tailwind yerine doğrudan Next.js'in resmi stil prop'unu verdik
             style={{ objectFit: "contain", objectPosition: "center" }}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             priority
@@ -68,8 +70,17 @@ export function ProductCard({
         </div>
         <CardDescription className="line-clamp-2">{description}</CardDescription>
       </CardHeader>
-      <CardFooter className="border-t border-border pt-4">
-        <p className="text-lg font-semibold text-foreground">{priceLabel}</p>
+      <CardFooter className="border-t border-border pt-4 flex items-center justify-between gap-2">
+        <div className="flex flex-col">
+          <p className="text-lg font-semibold text-foreground">{priceLabel}</p>
+        </div>
+
+        <div className="w-32">
+          <CheckoutButton
+            mode="add-to-cart"
+            productInfo={{ stripePriceId: stripePriceId || '', name: name }}
+          />
+        </div>
       </CardFooter>
     </Card>
   );

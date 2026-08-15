@@ -88,9 +88,34 @@ export async function createProduct(
 
   let productId: string;
   try {
-    const result = await createProductRecord(parsed.data, imageUrls);
+    // 1. Adım: Stripe üzerinde Ürünü (Product) oluşturuyoruz
+    const stripeProduct = await stripe.products.create({
+      name: parsed.data.name,
+      description: parsed.data.description|| undefined,
+      images: imageUrls.length > 0 ? [imageUrls[0]] : undefined,
+    });
+
+    // 2. Adım: O ürüne bağlı Fiyatı (Price) oluşturuyoruz (Stripe kuruş/cent beklediği için 100 ile çarptık)
+    const stripePrice = await stripe.prices.create({
+      product: stripeProduct.id,
+      // parsed.data.price yerine priceCents kullanıyoruz. Zod şemanız bunu zaten sayı (number) yaptığı için Number() sarmalına da gerek yok.
+      unit_amount: Math.round(parsed.data.priceCents),
+      currency: parsed.data.currency.toLocaleLowerCase(), // Stripe para birimini küçük harf bekler (usd, try vb.)
+    });
+
+    // 3. Adım: Hem doğrulanmış verileri hem resimleri hem de Stripe kimliklerini yerel fonksiyona paslıyoruz
+    const result = await createProductRecord({
+      ...parsed.data,
+      stripePriceId: stripePrice.id,
+      stripeProductId: stripeProduct.id,
+    },
+    imageUrls
+    );
+
+
     productId = result.id;
-  } catch {
+  } catch (error: any) {
+    console.error("Stripe/Database Creation Error:", error);
     return {
       message: 'Could not create the product. Please try again.',
       values,

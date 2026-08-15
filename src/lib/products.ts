@@ -20,6 +20,8 @@ export type Product = {
   stock: number;
   imageUrls: string[];
   isActive: boolean;
+  stripeProductId?: string | null; // Stripe Ürün ID alanı eklendi
+  stripePriceId?: string | null;   // Stripe Fiyat ID alanı eklendi
   createdAt: Date;
   updatedAt: Date;
 };
@@ -37,6 +39,8 @@ function toProduct(record: PrismaProduct): Product {
     throw new Error(`Unsupported category: ${record.category}`);
   }
 
+
+  // record içerisinden gelen stripe alanlarını güvenle eşleştiriyoruz.
   return {
     id: record.id,
     name: record.name,
@@ -47,6 +51,8 @@ function toProduct(record: PrismaProduct): Product {
     stock: record.stock,
     imageUrls: record.imageUrls,
     isActive: record.isActive,
+    stripeProductId: (record as any).stripeProductId ?? null, 
+    stripePriceId: (record as any).stripePriceId ?? null,
     createdAt: record.createdAt,
     updatedAt: record.updatedAt,
   };
@@ -58,7 +64,7 @@ export async function getStorefrontProducts(
   try {
     const records = await prisma.product.findMany({
       where: {
-        isActive: true, //Anasayfada sadece aktif ürünleri göstermek için filtreleme
+        isActive: true, // Anasayfada sadece aktif ürünleri göstermek için filtreleme
       },
       orderBy: { createdAt: "desc" },
     });
@@ -99,8 +105,10 @@ export async function getProductById(id: string): Promise<Product | null> {
   }
 }
 
+
+// createProduct fonksiyonunu dışarıdan gelen Stripe ID'lerini kabul edecek şekilde genişlettik
 export async function createProduct(
-  data: CreateProductData,
+  data: CreateProductData & { stripeProductId?: string | null; stripePriceId?: string | null },
   imageUrls: string[],
 ): Promise<Product> {
   const record = await prisma.product.create({
@@ -144,8 +152,33 @@ export function parseStorefrontFilters(
 };
 }
 
+// Ürün MongoDB'den silinmeden hemen önce Stripe tarafında arşivleniyor (active: false)
+import { stripe } from "@/lib/stripe";
+
+
 // delete products
 export async function deleteProduct(id: string): Promise<void> {
+  try {
+    // Ürünü Stripe üzerinde arşivliyoruz (active: false)
+    const product = await prisma.product.findUnique({ 
+      where: { id } 
+    });
+    
+    if (product) {
+      // Stripe Fiyatını arşivle
+      if (product.stripePriceId) {
+        await stripe.prices.update(product.stripePriceId, { active: false }).catch(() => null);;
+      }
+      // Stripe Ürününü arşivle
+      if (product.stripeProductId) {
+        await stripe.products.update(product.stripeProductId, { active: false }).catch(() => null);;
+      }
+    }
+  } catch (stripeError) {
+    console.error(`Stripe archiving failed with id ${id}, moving on to DB deletion:`, stripeError);
+  }
+
+  // Yerel veritabanından kalıcı olarak sil
   await prisma.product.delete({
     where: { id },
   });

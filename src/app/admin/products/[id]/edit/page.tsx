@@ -91,8 +91,8 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Status</label>
-                <select 
-                  name="isActive" 
+                <select
+                  name="isActive"
                   defaultValue={product.isActive ? "true" : "false"}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 >
