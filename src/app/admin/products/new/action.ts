@@ -9,8 +9,8 @@ import { Currency } from '@/types/currency';
 import { ProductCategory } from '@/types/product';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { put } from '@vercel/blob';
-import { stripe } from '@/lib/stripe';
+import { uploadProductImagesService } from '@/services/imageService';
+import { stripe } from "@/lib/stripe";
 
 export type CreateProductFormValues = {
   name: string;
@@ -84,18 +84,8 @@ export async function createProduct(
     };
   }
 
-  const imageUrls = await Promise.all(
-    imagesParsed.data.map(async (file) => {
-      const blob = await put(`products/${Date.now()}-${file.name}`, file, {
-        access: "public",
-        addRandomSuffix: true,
-        // Bilgisayarımızda OIDC çakışmasını engellemek için doğrudan .env dosyasındaki tokenı kullanmasını emrediyoruz:
-        token: process.env.BLOB_READ_WRITE_TOKEN, 
-      });
-
-      return blob.url;
-    }),
-  );
+  //Doğrudan put(...) yerine imageService fonksiyonunu kullanıyoruz
+  const imageUrls = await uploadProductImagesService(imagesParsed.data);
 
   let productId: string;
   try {

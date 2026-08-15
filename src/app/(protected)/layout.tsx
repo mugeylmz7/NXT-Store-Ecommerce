@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/auth0";
+import { requireUser } from "@/lib/auth0-utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {

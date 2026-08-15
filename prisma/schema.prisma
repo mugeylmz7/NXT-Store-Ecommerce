@@ -50,6 +50,7 @@ enum Currency {
   EUR
   GBP
   TRY
+  USD
 }
 
 

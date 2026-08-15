@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getSessionUser, isAdmin } from "@/lib/auth0";
+import { getSessionUser, isAdmin } from "@/lib/auth0-utils";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { updateUserAddress, updateUserProfile } from "./actions";

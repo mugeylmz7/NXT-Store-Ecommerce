@@ -1,4 +1,4 @@
-import { getSessionUser, isAdmin } from "@/lib/auth0";
+import { getSessionUser, isAdmin } from "@/lib/auth0-utils";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./mode-toggle";

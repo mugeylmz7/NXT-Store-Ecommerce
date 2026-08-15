@@ -1,4 +1,5 @@
-import type { Product as PrismaProduct } from "../generated/prisma";
+import type { Product as PrismaProduct } from "@/generated/prisma";
+
 import { parseStorefrontFiltersFromSearchParams } from "@/lib/validation";
 import type { CreateProductData } from "@/lib/validation/product";
 import { prisma } from "@/lib/prisma";
@@ -113,6 +114,8 @@ export async function createProduct(
   const record = await prisma.product.create({
     data: {
       ...data,
+      currency: data.currency as Currency,
+      category: data.category as ProductCategory,
       imageUrls,
     },
   });
@@ -124,9 +127,15 @@ export async function updateProduct(
   id: string,
   data: Partial<CreateProductData> & { imageUrls?: string[]; isActive?: boolean }
 ): Promise<Product> {
+
+  const { currency, category, ...rest } = data;
   const record = await prisma.product.update({
     where: { id },
-    data,
+    data: {
+      ...rest,
+      ...(currency && { currency: currency as Currency }),
+      ...(category && { category: category as ProductCategory }),
+    },
   });
   return toProduct(record);
 }
@@ -137,7 +146,10 @@ export function parseStorefrontFilters(
   const { category, sort } =
     parseStorefrontFiltersFromSearchParams(searchParams);
 
-  return { categoryValue: category, sortValue: sort };
+  return { 
+  categoryValue: category as ProductCategory | "all", 
+  sortValue: sort as ProductSort 
+};
 }
 
 // Ürün MongoDB'den silinmeden hemen önce Stripe tarafında arşivleniyor (active: false)
