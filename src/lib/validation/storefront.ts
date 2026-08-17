@@ -1,32 +1,40 @@
 import { z } from "zod";
-
 import { ProductSort } from "@/types/product";
 
-import { productCategorySchema } from "./product";
-
-export const productSortSchema = z.nativeEnum(ProductSort);
-
-export const storefrontCategoryFilterSchema = z.union([
-  z.literal("all"),
-  productCategorySchema,
-]);
-
-export const storefrontFiltersSchema = z.object({
-  category: storefrontCategoryFilterSchema.default("all"),
-  sort: productSortSchema.default(ProductSort.NAME_ASC),
+export const productSortSchema = z.string().optional().transform((val) => {
+  if (!val) return ProductSort.NAME_ASC || "name_asc";
+  return val as ProductSort;
 });
 
-export type StorefrontFiltersInput = z.infer<typeof storefrontFiltersSchema>;
+export const storefrontCategoryFilterSchema = z.string().optional().transform((val) => {
+  if (!val || val === "all") return "all";
+  return val;
+});
+
+export const storefrontSortSchema = productSortSchema;
+
+export const storefrontFiltersSchema = z.object({
+  category: storefrontCategoryFilterSchema,
+  sort: storefrontSortSchema,
+});
+
+export type StorefrontFiltersInput = {
+  category: string;
+  sort: ProductSort;
+};
 
 export function parseStorefrontFiltersFromSearchParams(
   searchParams: Record<string, string | string[] | undefined>,
 ): StorefrontFiltersInput {
-  const categoryParam = Array.isArray(searchParams.category)
-    ? searchParams.category[0]
-    : searchParams.category;
-  const sortParam = Array.isArray(searchParams.sort)
-    ? searchParams.sort[0]
-    : searchParams.sort;
+  const safeParams = searchParams ?? {};
+
+  const categoryParam = Array.isArray(safeParams.category)
+    ? safeParams.category[0]
+    : safeParams.category;
+
+  const sortParam = Array.isArray(safeParams.sort)
+    ? safeParams.sort[0]
+    : safeParams.sort;
 
   const result = storefrontFiltersSchema.safeParse({
     category: categoryParam ?? "all",
@@ -34,7 +42,7 @@ export function parseStorefrontFiltersFromSearchParams(
   });
 
   if (result.success) {
-    return result.data;
+    return result.data as StorefrontFiltersInput;
   }
 
   return { category: "all", sort: ProductSort.NAME_ASC };

@@ -11,7 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { prisma } from "@/lib/prisma"; // Doğrudan ham veritabanı bağlantısı
+import { prisma } from "@/lib/prisma";
+import { deleteProduct } from "@/lib/products"; // Silme/arşivleme fonksiyonunu içeri aktarıyoruz
 
 type DeleteProductPageProps = {
   params: Promise<{ id: string }>;
@@ -28,7 +29,6 @@ export default async function DeleteProductPage({
     where: { id: productId },
   });
 
-  // Eğer hâlâ bulamıyorsa, MongoDB ObjectId string eşleşmesi için bir de yedek kontrol koyalım
   if (!product) {
     notFound();
   }
@@ -39,10 +39,8 @@ export default async function DeleteProductPage({
     "use server";
 
     try {
-      // 1. MongoDB'den ham sorgu ile ürünü sil
-      await prisma.product.delete({
-        where: { id: productId },
-      });
+      // Hem Stripe'ı arşivleyen hem de MongoDB'den silen fonksiyonumuzu çağırıyoruz
+      await deleteProduct(productId);
 
       // 2. Vercel Blob resimlerini temizle
       if (urlsToDelete.length > 0) {
@@ -52,7 +50,6 @@ export default async function DeleteProductPage({
       console.error("Deleting is failed", error);
     }
 
-    // Cache'leri patlat ve admin listesine geri fırlat
     revalidatePath("/admin/products");
     revalidatePath("/");
     redirect("/admin/products");

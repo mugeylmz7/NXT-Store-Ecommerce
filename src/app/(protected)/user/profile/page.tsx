@@ -40,7 +40,6 @@ export default async function ProfilePage() {
   // Kullanıcının admin olup olmadığını kontrol ediyoruz
   const userIsAdmin = isAdmin(user);
 
-
   return (
     <div className="max-w-4xl mx-auto mt-6 px-4 pb-12 space-y-8">
       {/* Geri Dönüş Butonu */}
@@ -60,7 +59,7 @@ export default async function ProfilePage() {
         <div className="flex-1 text-center md:text-left space-y-2">
           <div className="flex flex-col md:flex-row md:items-center gap-2">
             <h1 className="text-2xl font-bold tracking-tight">{dbUser.name}</h1>
-            
+
             {/* Rolüne göre şık bir rozet (Badge) gösteriyoruz */}
             <div className="mx-auto md:mx-0">
               {userIsAdmin ? (
@@ -72,7 +71,7 @@ export default async function ProfilePage() {
               )}
             </div>
           </div>
-          
+
           <p className="text-sm text-muted-foreground">{dbUser.email}</p>
         </div>
 
@@ -94,7 +93,7 @@ export default async function ProfilePage() {
             Update your personal details, email, and shipping address down below.
           </p>
         </div>
-        
+
         {/* Formu buraya çağırıp veritabanı bilgilerini teslim ediyoruz */}
         <ProfileForm dbUser={dbUser} />
       </div>

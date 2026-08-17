@@ -84,7 +84,7 @@ export async function updateUserAddress(formdata: FormData) {
         phone: validatedData.phone || "",
     });
 
-    revalidatePath("/user/profile"); // Sayfayı yenilemek için revalidatePath kullanıyoruz
+    revalidatePath("/user/profile");
   } catch (error) {
     console.error("Error updating user address:", error);
     throw new Error("Failed to update user address");

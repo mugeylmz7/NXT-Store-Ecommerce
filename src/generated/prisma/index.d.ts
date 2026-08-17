@@ -968,6 +968,8 @@ export namespace Prisma {
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    stripeProductId: string | null
+    stripePriceId: string | null
   }
 
   export type ProductMaxAggregateOutputType = {
@@ -981,6 +983,8 @@ export namespace Prisma {
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
+    stripeProductId: string | null
+    stripePriceId: string | null
   }
 
   export type ProductCountAggregateOutputType = {
@@ -995,6 +999,8 @@ export namespace Prisma {
     isActive: number
     createdAt: number
     updatedAt: number
+    stripeProductId: number
+    stripePriceId: number
     _all: number
   }
 
@@ -1020,6 +1026,8 @@ export namespace Prisma {
     isActive?: true
     createdAt?: true
     updatedAt?: true
+    stripeProductId?: true
+    stripePriceId?: true
   }
 
   export type ProductMaxAggregateInputType = {
@@ -1033,6 +1041,8 @@ export namespace Prisma {
     isActive?: true
     createdAt?: true
     updatedAt?: true
+    stripeProductId?: true
+    stripePriceId?: true
   }
 
   export type ProductCountAggregateInputType = {
@@ -1047,6 +1057,8 @@ export namespace Prisma {
     isActive?: true
     createdAt?: true
     updatedAt?: true
+    stripeProductId?: true
+    stripePriceId?: true
     _all?: true
   }
 
@@ -1148,6 +1160,8 @@ export namespace Prisma {
     isActive: boolean
     createdAt: Date
     updatedAt: Date
+    stripeProductId: string
+    stripePriceId: string
     _count: ProductCountAggregateOutputType | null
     _avg: ProductAvgAggregateOutputType | null
     _sum: ProductSumAggregateOutputType | null
@@ -1181,6 +1195,8 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    stripeProductId?: boolean
+    stripePriceId?: boolean
   }, ExtArgs["result"]["product"]>
 
 
@@ -1197,9 +1213,11 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    stripeProductId?: boolean
+    stripePriceId?: boolean
   }
 
-  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "priceCents" | "currency" | "category" | "stock" | "imageUrls" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+  export type ProductOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "description" | "priceCents" | "currency" | "category" | "stock" | "imageUrls" | "isActive" | "createdAt" | "updatedAt" | "stripeProductId" | "stripePriceId", ExtArgs["result"]["product"]>
 
   export type $ProductPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Product"
@@ -1216,6 +1234,8 @@ export namespace Prisma {
       isActive: boolean
       createdAt: Date
       updatedAt: Date
+      stripeProductId: string
+      stripePriceId: string
     }, ExtArgs["result"]["product"]>
     composites: {}
   }
@@ -1619,6 +1639,8 @@ export namespace Prisma {
     readonly isActive: FieldRef<"Product", 'Boolean'>
     readonly createdAt: FieldRef<"Product", 'DateTime'>
     readonly updatedAt: FieldRef<"Product", 'DateTime'>
+    readonly stripeProductId: FieldRef<"Product", 'String'>
+    readonly stripePriceId: FieldRef<"Product", 'String'>
   }
     
 
@@ -2980,7 +3002,9 @@ export namespace Prisma {
     imageUrls: 'imageUrls',
     isActive: 'isActive',
     createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    stripeProductId: 'stripeProductId',
+    stripePriceId: 'stripePriceId'
   };
 
   export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
@@ -3133,6 +3157,8 @@ export namespace Prisma {
     isActive?: BoolFilter<"Product"> | boolean
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
+    stripeProductId?: StringFilter<"Product"> | string
+    stripePriceId?: StringFilter<"Product"> | string
   }
 
   export type ProductOrderByWithRelationInput = {
@@ -3147,6 +3173,8 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    stripeProductId?: SortOrder
+    stripePriceId?: SortOrder
   }
 
   export type ProductWhereUniqueInput = Prisma.AtLeast<{
@@ -3164,6 +3192,8 @@ export namespace Prisma {
     isActive?: BoolFilter<"Product"> | boolean
     createdAt?: DateTimeFilter<"Product"> | Date | string
     updatedAt?: DateTimeFilter<"Product"> | Date | string
+    stripeProductId?: StringFilter<"Product"> | string
+    stripePriceId?: StringFilter<"Product"> | string
   }, "id">
 
   export type ProductOrderByWithAggregationInput = {
@@ -3178,6 +3208,8 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    stripeProductId?: SortOrder
+    stripePriceId?: SortOrder
     _count?: ProductCountOrderByAggregateInput
     _avg?: ProductAvgOrderByAggregateInput
     _max?: ProductMaxOrderByAggregateInput
@@ -3200,6 +3232,8 @@ export namespace Prisma {
     isActive?: BoolWithAggregatesFilter<"Product"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Product"> | Date | string
+    stripeProductId?: StringWithAggregatesFilter<"Product"> | string
+    stripePriceId?: StringWithAggregatesFilter<"Product"> | string
   }
 
   export type UserWhereInput = {
@@ -3296,6 +3330,8 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    stripeProductId: string
+    stripePriceId: string
   }
 
   export type ProductUncheckedCreateInput = {
@@ -3310,6 +3346,8 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    stripeProductId: string
+    stripePriceId: string
   }
 
   export type ProductUpdateInput = {
@@ -3323,6 +3361,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
+    stripePriceId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ProductUncheckedUpdateInput = {
@@ -3336,6 +3376,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
+    stripePriceId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ProductCreateManyInput = {
@@ -3350,6 +3392,8 @@ export namespace Prisma {
     isActive?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
+    stripeProductId: string
+    stripePriceId: string
   }
 
   export type ProductUpdateManyMutationInput = {
@@ -3363,6 +3407,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
+    stripePriceId?: StringFieldUpdateOperationsInput | string
   }
 
   export type ProductUncheckedUpdateManyInput = {
@@ -3376,6 +3422,8 @@ export namespace Prisma {
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    stripeProductId?: StringFieldUpdateOperationsInput | string
+    stripePriceId?: StringFieldUpdateOperationsInput | string
   }
 
   export type UserCreateInput = {
@@ -3548,6 +3596,8 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    stripeProductId?: SortOrder
+    stripePriceId?: SortOrder
   }
 
   export type ProductAvgOrderByAggregateInput = {
@@ -3566,6 +3616,8 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    stripeProductId?: SortOrder
+    stripePriceId?: SortOrder
   }
 
   export type ProductMinOrderByAggregateInput = {
@@ -3579,6 +3631,8 @@ export namespace Prisma {
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    stripeProductId?: SortOrder
+    stripePriceId?: SortOrder
   }
 
   export type ProductSumOrderByAggregateInput = {

@@ -125,7 +125,9 @@ exports.Prisma.ProductScalarFieldEnum = {
   imageUrls: 'imageUrls',
   isActive: 'isActive',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  stripeProductId: 'stripeProductId',
+  stripePriceId: 'stripePriceId'
 };
 
 exports.Prisma.UserScalarFieldEnum = {
