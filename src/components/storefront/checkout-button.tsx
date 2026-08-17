@@ -102,7 +102,6 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
   // 3. Durum: Sepeti Tamamen Temizleme Fonksiyonu
   const handleClearCart = (e: React.FormEvent) => {
     e.preventDefault();
-    clearCart();
     // Sayfadaki sepet sayısını sıfırlamak için event'i tetikliyoruz
     window.dispatchEvent(new Event("cart-updated"));
     triggerToast("Your cart has been cleared!", "info");

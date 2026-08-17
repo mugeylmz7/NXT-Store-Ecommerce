@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { getProductById, updateProduct } from "@/lib/products";
 import { ProductCategory } from "@/types/product";
+import { stripe } from "@/lib/stripe";
 
 type EditProductPageProps = {
   params: Promise<{ id: string }>;
@@ -49,6 +50,45 @@ async function handleEditAction(productId: string, currentImageUrls: string[], f
     }
   }
 
+
+  // STRIPE SENKRONİZASYONU
+  const existingProduct = await getProductById(productId);
+  let newStripePriceId = existingProduct?.stripePriceId ?? null;
+
+  if (existingProduct) {
+    try {
+      // A. Stripe üzerindeki Ürün ismini ve açıklamasını güncelle
+      if (existingProduct.stripeProductId) {
+        await stripe.products.update(existingProduct.stripeProductId, {
+          name,
+          description,
+          active: isActive,
+        });
+      }
+
+      // B. Eğer fiyat değiştiyse: Eski fiyatı arşivle, yeni bir fiyat oluştur
+      if (existingProduct.priceCents !== priceCents && existingProduct.stripeProductId) {
+        // 1. Yeni Stripe Fiyatı oluştur
+        const createdPrice = await stripe.prices.create({
+          product: existingProduct.stripeProductId,  // Fiyatın bağlı olduğu Stripe Ürün ID'si
+          unit_amount: priceCents,                  // Yeni fiyat (Cent cinsinden)
+          currency: (existingProduct.currency || "eur").toLowerCase(),
+        });
+
+        newStripePriceId = createdPrice.id;  // Yeni oluşan Price ID'yi değişkene atıyoruz
+
+        // 2. Eski Stripe Fiyatını arşivle
+        if (existingProduct.stripePriceId) {
+          await stripe.prices.update(existingProduct.stripePriceId, { active: false });
+        }
+      }
+    } catch (stripeErr) {
+      console.error("Stripe sync error during edit:", stripeErr);
+      throw new Error("Failed to sync updates with Stripe");
+    }
+  }
+
+  // 3. MONGODB GÜNCELLEMESİ (Yeni Stripe Price ID'si ile birlikte)
   try {
     await updateProduct(productId, {
       name,
@@ -58,14 +98,15 @@ async function handleEditAction(productId: string, currentImageUrls: string[], f
       category,
       isActive,
       imageUrls: finalImageUrls,
+      stripePriceId: newStripePriceId,  // Fiyat değiştiyse yeni Id, değişmediyse eski Id yazılır
     });
-  } catch (error) {
-    console.error("Update error:", error);
-  }
+} catch (error) {
+  console.error("Update error:", error);
+}
 
-  revalidatePath("/admin/products");
-  revalidatePath("/");
-  redirect("/admin/products");
+revalidatePath("/admin/products");
+revalidatePath("/");
+redirect("/admin/products");
 }
 
 export default async function EditProductPage({ params }: EditProductPageProps) {

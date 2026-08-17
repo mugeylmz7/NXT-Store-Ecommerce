@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe';
 import { z } from 'zod';
+import { requireUserOr401 } from "@/lib/auth0";
 
 const CheckoutSchema = z.object({
   cartItems: z.array(
@@ -14,6 +15,10 @@ const CheckoutSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const userOrRes = await requireUserOr401();
+  if (userOrRes instanceof Response) {
+    return userOrRes; // Giriş yapmamışsa 401 Unauthorized döner
+  }
   try {
     const headersList = await headers()
     const origin = headersList.get('origin')

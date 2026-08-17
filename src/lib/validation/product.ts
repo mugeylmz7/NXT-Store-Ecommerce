@@ -13,7 +13,7 @@ import { priceStringToCents } from "@/types/currency";
 
 const PRICE_PATTERN = /^\d+(\.\d{1,2})?$/;
 
-export const productCategorySchema = z.enum(ProductCategory);
+export const productCategorySchema = z.nativeEnum(ProductCategory);
 
 export const createProductFormSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
