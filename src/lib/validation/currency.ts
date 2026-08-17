@@ -1,5 +1,4 @@
 import { z } from "zod";
-
 import { Currency } from "@/types/currency";
 
 export const currencySchema = z.nativeEnum(Currency);

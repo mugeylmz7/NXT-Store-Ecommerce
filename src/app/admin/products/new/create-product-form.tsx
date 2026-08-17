@@ -12,6 +12,7 @@ import { ACCEPTED_IMAGE_ACCEPT_ATTR, MAX_IMAGE_MB } from "@/lib/product-images";
 import { Currency, EU_CURRENCY_OPTIONS } from "@/types/currency";
 import { PRODUCT_CATEGORY_OPTIONS, ProductCategory } from "@/types/product";
 import { createProduct, CreateProductFieldErrors, CreateProductFormValues, CreateProductState } from "./action";
+import { Typography } from "@/components/ui/typography";
 
 const initialValues: CreateProductFormValues = {
   name: "",
@@ -59,10 +60,12 @@ export function CreateProductForm() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Basic details</h2>
-          <p className="text-sm text-muted-foreground">
+          <Typography variant="h2" className="text-base font-semibold text-foreground">
+            Basic details
+          </Typography>
+          <Typography variant="muted" className="text-sm text-muted-foreground">
             Core product information stored in the <code>products</code> collection.
-          </p>
+          </Typography>
         </div>
 
         <div className="grid gap-4">
@@ -124,10 +127,12 @@ export function CreateProductForm() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Pricing & inventory</h2>
-          <p className="text-sm text-muted-foreground">
+          <Typography variant="h2" className="text-base font-semibold text-foreground">
+            Pricing & inventory
+          </Typography>
+          <Typography variant="muted" className="text-sm text-muted-foreground">
             Price is entered in major units and stored as <code>priceCents</code> in the database.
-          </p>
+          </Typography>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
@@ -196,11 +201,13 @@ export function CreateProductForm() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Images</h2>
-          <p className="text-sm text-muted-foreground">
+          <Typography variant="h2" className="text-base font-semibold text-foreground">
+            Images
+          </Typography>
+          <Typography variant="muted" className="text-sm text-muted-foreground">
             Files are uploaded to Vercel Blob; only the returned URLs are saved on
             the product. Max {MAX_IMAGE_MB} MB per image.
-          </p>
+          </Typography>
         </div>
 
         <FormField
@@ -222,7 +229,9 @@ export function CreateProductForm() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Visibility</h2>
+          <Typography variant="h2" className="text-base font-semibold text-foreground">
+            Visibility
+          </Typography>
           <p className="text-sm text-muted-foreground">
             Inactive products stay in the database but can be hidden from the storefront later.
           </p>

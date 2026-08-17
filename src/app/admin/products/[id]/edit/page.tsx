@@ -1,113 +1,20 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
-import { put } from "@vercel/blob";
+import { notFound} from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { getProductById, updateProduct } from "@/lib/products";
+import { getProductById } from "@/lib/products";
 import { ProductCategory } from "@/types/product";
-import { stripe } from "@/lib/stripe";
+import { handleEditAction } from "./actions";
+import { Typography } from "@/components/ui/typography";
 
 type EditProductPageProps = {
   params: Promise<{ id: string }>;
 };
 
-async function handleEditAction(productId: string, currentImageUrls: string[], formData: FormData) {
-  "use server";
 
-  const name = formData.get("name") as string;
-  const description = formData.get("description") as string;
-  const priceCents = parseInt(formData.get("priceCents") as string) || 0;
-  const stock = parseInt(formData.get("stock") as string) || 0;
-
-  const rawCategory = formData.get("category") as string;
-  const category = rawCategory as ProductCategory;
-
-  const isActive = formData.get("isActive") === "true";
-  const imageFiles = formData.getAll("images") as File[];
-
-  let finalImageUrls = [...currentImageUrls];
-
-  if (imageFiles && imageFiles.length > 0 && imageFiles[0].size > 0) {
-    try {
-      const uploadPromises = imageFiles.map(async (file) => {
-        if (file.size === 0) return null;
-        const blob = await put(`products/${Date.now()}-${file.name}`, file, {
-          access: "public",
-        });
-        return blob.url;
-      });
-
-      const newUrls = (await Promise.all(uploadPromises)).filter(Boolean) as string[];
-      if (newUrls.length > 0) {
-        finalImageUrls = [...newUrls, ...finalImageUrls];
-      }
-    } catch (error) {
-      console.error("Blob upload error:", error);
-    }
-  }
-
-
-  // STRIPE SENKRONİZASYONU
-  const existingProduct = await getProductById(productId);
-  let newStripePriceId = existingProduct?.stripePriceId ?? null;
-
-  if (existingProduct) {
-    try {
-      // A. Stripe üzerindeki Ürün ismini ve açıklamasını güncelle
-      if (existingProduct.stripeProductId) {
-        await stripe.products.update(existingProduct.stripeProductId, {
-          name,
-          description,
-          active: isActive,
-        });
-      }
-
-      // B. Eğer fiyat değiştiyse: Eski fiyatı arşivle, yeni bir fiyat oluştur
-      if (existingProduct.priceCents !== priceCents && existingProduct.stripeProductId) {
-        // 1. Yeni Stripe Fiyatı oluştur
-        const createdPrice = await stripe.prices.create({
-          product: existingProduct.stripeProductId,  // Fiyatın bağlı olduğu Stripe Ürün ID'si
-          unit_amount: priceCents,                  // Yeni fiyat (Cent cinsinden)
-          currency: (existingProduct.currency || "eur").toLowerCase(),
-        });
-
-        newStripePriceId = createdPrice.id;  // Yeni oluşan Price ID'yi değişkene atıyoruz
-
-        // 2. Eski Stripe Fiyatını arşivle
-        if (existingProduct.stripePriceId) {
-          await stripe.prices.update(existingProduct.stripePriceId, { active: false });
-        }
-      }
-    } catch (stripeErr) {
-      console.error("Stripe sync error during edit:", stripeErr);
-      throw new Error("Failed to sync updates with Stripe");
-    }
-  }
-
-  // 3. MONGODB GÜNCELLEMESİ (Yeni Stripe Price ID'si ile birlikte)
-  try {
-    await updateProduct(productId, {
-      name,
-      description,
-      priceCents,
-      stock,
-      category,
-      isActive,
-      imageUrls: finalImageUrls,
-      stripePriceId: newStripePriceId,  // Fiyat değiştiyse yeni Id, değişmediyse eski Id yazılır
-    });
-} catch (error) {
-  console.error("Update error:", error);
-}
-
-revalidatePath("/admin/products");
-revalidatePath("/");
-redirect("/admin/products");
-}
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const resolvedParams = await params;
@@ -119,8 +26,6 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     notFound();
   }
 
-  const editActionWithArgs = handleEditAction.bind(null, productId, product.imageUrls);
-
   // Veritabanındaki kategorinin selectbox'ta doğru seçili gelmesi için küçük harfe zorluyoruz
   const currentCategory = product.category ? product.category.toLowerCase() : "electronics";
 
@@ -128,7 +33,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
     <main className="space-y-6 p-6 max-w-2xl mx-auto">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Edit Product</h1>
-        <p className="text-sm text-muted-foreground">Modify the details of {product.name}</p>
+        <Typography variant="body" className="text-sm text-muted-foreground">
+          Modify the details of {product.name}
+        </Typography>
       </div>
 
       <Card>
@@ -137,7 +44,12 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
           <CardDescription>Update your product details and manage assets safely.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={editActionWithArgs} encType="multipart/form-data" className="space-y-4">
+          <form action={handleEditAction} encType="multipart/form-data" className="space-y-4">
+
+          <input type="hidden" name="productId" value={productId} />
+            {product.imageUrls?.map((url, i) => (
+              <input key={i} type="hidden" name="currentImageUrls" value={url} />
+            ))}
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Product Name</label>
@@ -163,9 +75,9 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Category</label>
-                {/* Option value değerlerini hem küçük hem büyük ihtimalini kapsayacak şekilde güncelliyoruz */}
-                <select
-                  name="category"
+                {/* Option value değerlerini hem küçük hem büyük ihtimalini kapsayacak şekilde güncelledik */}
+                <select 
+                  name="category" 
                   defaultValue={product.category}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
                 >
@@ -200,17 +112,26 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
                 <label className="text-sm font-medium block">Current Images ({product.imageUrls.length})</label>
                 <div className="flex gap-2 overflow-x-auto p-2 bg-muted/50 rounded-lg">
                   {product.imageUrls.map((url, index) => (
-                    <img
-                      key={index}
-                      src={url}
-                      alt="product"
-                      className="w-16 h-16 object-cover rounded border border-border bg-background"
-                    />
+                    <div key={index} className="flex items-center gap-2 border p-2 rounded bg-background">
+                      <img 
+                        src={url} 
+                        alt="product" 
+                        className="w-12 h-12 object-cover rounded border"
+                      />
+                      <label className="flex items-center gap-1.5 text-xs text-destructive cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          name="removeImages"
+                          value={url}
+                          className="rounded border-gray-300 text-destructive focus:ring-destructive"
+                        />
+                        Remove
+                      </label>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
-
             <div className="flex gap-3 justify-end pt-4 border-t">
               <Button type="button" variant="outline" asChild>
                 <Link href="/admin/products">Cancel</Link>
