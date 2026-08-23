@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { getStorefrontProducts, parseStorefrontFilters } from "@/lib/products";
 
+jest.mock('stripe', () => {
+  return jest.fn().mockImplementation(() => ({}));
+});
+
 // Prisma'yı mock'lamak için jest.mock kullanıyoruz
 jest.mock('../lib/prisma', () => ({
   prisma: {
