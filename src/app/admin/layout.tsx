@@ -14,10 +14,17 @@ export default async function AdminLayout({
 }>) {
   await requireAdmin();
 
-  return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] flex-1">
+ return (
+    <div className="flex min-h-screen w-full flex-col md:flex-row bg-background">
+      {/* Mobil Üst Bar / Masaüstü Sidebar */}
       <AdminSidebar />
-      <div className="flex-1 overflow-auto">{children}</div>
+
+      {/* Tümüyle Doğal Kaydırılabilir Alan */}
+      <main className="container max-w-5xl mx-auto space-y-6 px-6">
+        <div className="mx-auto max-w-5xl space-y-6 pb-6">
+          {children}
+        </div>
+      </main>
     </div>
   );
 }

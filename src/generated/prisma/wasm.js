@@ -112,8 +112,53 @@ exports.Prisma.UserScalarFieldEnum = {
   postalCode: 'postalCode',
   country: 'country',
   phone: 'phone',
+  role: 'role',
+  isSuspended: 'isSuspended',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  stripeSessionId: 'stripeSessionId',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  status: 'status',
+  cancelledBy: 'cancelledBy',
+  shippedAt: 'shippedAt',
+  cancelledAt: 'cancelledAt',
+  totalCents: 'totalCents',
+  currency: 'currency',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  quantity: 'quantity',
+  priceCents: 'priceCents'
+};
+
+exports.Prisma.SupportTicketScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  subject: 'subject',
+  message: 'message',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  message: 'message',
+  link: 'link',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -125,6 +170,14 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+exports.OrderStatus = exports.$Enums.OrderStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  SHIPPED: 'SHIPPED',
+  CANCELLED: 'CANCELLED',
+  DELIVERED: 'DELIVERED'
+};
+
 exports.Currency = exports.$Enums.Currency = {
   EUR: 'EUR',
   GBP: 'GBP',
@@ -142,7 +195,11 @@ exports.Category = exports.$Enums.Category = {
 
 exports.Prisma.ModelName = {
   Product: 'Product',
-  User: 'User'
+  User: 'User',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  SupportTicket: 'SupportTicket',
+  Notification: 'Notification'
 };
 /**
  * Create the Client
@@ -192,13 +249,13 @@ const config = {
       }
     }
   },
-  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Product {\n  id              String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name            String\n  description     String\n  priceCents      Int // smallest currency unit: 1999 = 19.99 in the given currency\n  currency        Currency @default(EUR)\n  category        Category\n  stock           Int      @default(0)\n  imageUrls       String[] // URLs returned by Vercel Blob\n  isActive        Boolean  @default(false)\n  createdAt       DateTime @default(now())\n  updatedAt       DateTime @updatedAt\n  stripeProductId String? // Stripe için yeni eklenen alanlar (isteğe bağlı/optional yapıyoruz ki mevcut veriler patlamasın)\n  stripePriceId   String?\n\n  @@map(\"products\")\n}\n\n// Yeni ekleyeceğimiz User modeli (Profil bilgilerini tutmak için):\nmodel User {\n  id         String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  auth0Id    String   @unique // Auth0'dan gelen benzersiz kullanıcı ID'si\n  email      String   @unique\n  name       String?\n  address    String?\n  city       String?\n  postalCode String?\n  country    String?\n  phone      String?\n  createdAt  DateTime @default(now())\n  updatedAt  DateTime @updatedAt\n}\n\nenum Currency {\n  EUR\n  GBP\n  TRY\n  USD\n}\n\nenum Category {\n  ELECTRONICS\n  CLOTHING\n  HOME\n  SPORTS\n  OTHER\n}\n",
-  "inlineSchemaHash": "90f3f1cbacb8b057236694a607767a025720930ad3471864974f9607b079c549",
+  "inlineSchema": "// This is your Prisma schema file,\n// learn more about it in the docs: https://pris.ly/d/prisma-schema\n\n// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?\n// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"mongodb\"\n  url      = env(\"DATABASE_URL\")\n}\n\nmodel Product {\n  id              String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  name            String\n  description     String\n  priceCents      Int // smallest currency unit: 1999 = 19.99 in the given currency\n  currency        Currency @default(EUR)\n  category        Category\n  stock           Int      @default(0)\n  imageUrls       String[] // URLs returned by Vercel Blob\n  isActive        Boolean  @default(false)\n  createdAt       DateTime @default(now())\n  updatedAt       DateTime @updatedAt\n  stripeProductId String? // Stripe için yeni eklenen alanlar (isteğe bağlı/optional yapıyoruz ki mevcut veriler patlamasın)\n  stripePriceId   String?\n\n  orderItems OrderItem[]\n\n  @@map(\"products\")\n}\n\n// Yeni ekleyeceğimiz User modeli (Profil bilgilerini tutmak için):\nmodel User {\n  id          String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  auth0Id     String   @unique // Auth0'dan gelen benzersiz kullanıcı ID'si\n  email       String   @unique\n  name        String?\n  address     String?\n  city        String?\n  postalCode  String?\n  country     String?\n  phone       String?\n  role        String   @default(\"USER\") // USER veya ADMIN\n  isSuspended Boolean  @default(false) // Askıya alınma durumu\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  orders Order[]\n}\n\nmodel Order {\n  id              String      @id @default(auto()) @map(\"_id\") @db.ObjectId\n  stripeSessionId String?     @unique\n  userId          String?     @db.ObjectId\n  user            User?       @relation(fields: [userId], references: [id])\n  userEmail       String? // Email gönderme\n  status          OrderStatus @default(PENDING)\n  cancelledBy     String? // \"USER\" veya \"ADMIN\" (İptal edeni takip etmek için)\n  shippedAt       DateTime? // Kargoya verilme tarihi\n  cancelledAt     DateTime? // İptal edilme tarihi\n  totalCents      Int\n  currency        Currency    @default(EUR)\n  items           OrderItem[]\n  createdAt       DateTime    @default(now())\n  updatedAt       DateTime    @updatedAt\n\n  @@map(\"orders\")\n}\n\nmodel OrderItem {\n  id         String  @id @default(auto()) @map(\"_id\") @db.ObjectId\n  orderId    String  @db.ObjectId\n  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)\n  productId  String  @db.ObjectId\n  product    Product @relation(fields: [productId], references: [id])\n  quantity   Int\n  priceCents Int\n\n  @@map(\"order_items\")\n}\n\nmodel SupportTicket {\n  id        String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  orderId   String?\n  subject   String\n  message   String\n  status    String   @default(\"OPEN\") // \"OPEN\" veya \"RESOLVED\"\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"support_tickets\")\n}\n\nmodel Notification {\n  id        String   @id @default(auto()) @map(\"_id\") @db.ObjectId\n  userId    String // Bildirimin gideceği kullanıcının ID/Email'i veya Adminler için \"ADMIN\"\n  title     String\n  message   String\n  link      String // Tıklayınca gidilecek yol (/admin/users, /admin/tickets, /user/orders vs.)\n  isRead    Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  @@map(\"notifications\")\n}\n\nenum OrderStatus {\n  PENDING // Sipariş Alındı / Beklemede\n  PAID // Ödendi / Hazırlanıyor\n  SHIPPED // Kargoda\n  CANCELLED // İptal Edildi\n  DELIVERED // Teslim Edildi\n}\n\nenum Currency {\n  EUR\n  GBP\n  TRY\n  USD\n}\n\nenum Category {\n  ELECTRONICS\n  CLOTHING\n  HOME\n  SPORTS\n  OTHER\n}\n",
+  "inlineSchemaHash": "c18fa4819eda646f4dfeba4da47575ab587fd00bd448be943d6001744f8f15fa",
   "copyEngine": true
 }
 config.dirname = '/'
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"Product\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"priceCents\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"currency\",\"kind\":\"enum\",\"type\":\"Currency\"},{\"name\":\"category\",\"kind\":\"enum\",\"type\":\"Category\"},{\"name\":\"stock\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"imageUrls\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"stripeProductId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripePriceId\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":\"products\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"auth0Id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"postalCode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"Product\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"description\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"priceCents\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"currency\",\"kind\":\"enum\",\"type\":\"Currency\"},{\"name\":\"category\",\"kind\":\"enum\",\"type\":\"Category\"},{\"name\":\"stock\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"imageUrls\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isActive\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"stripeProductId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"stripePriceId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"orderItems\",\"kind\":\"object\",\"type\":\"OrderItem\",\"relationName\":\"OrderItemToProduct\"}],\"dbName\":\"products\"},\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"auth0Id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"postalCode\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"country\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phone\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"role\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isSuspended\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"orders\",\"kind\":\"object\",\"type\":\"Order\",\"relationName\":\"OrderToUser\"}],\"dbName\":null},\"Order\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"stripeSessionId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"OrderToUser\"},{\"name\":\"userEmail\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"enum\",\"type\":\"OrderStatus\"},{\"name\":\"cancelledBy\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"shippedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"cancelledAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"totalCents\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"currency\",\"kind\":\"enum\",\"type\":\"Currency\"},{\"name\":\"items\",\"kind\":\"object\",\"type\":\"OrderItem\",\"relationName\":\"OrderToOrderItem\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"orders\"},\"OrderItem\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"orderId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"order\",\"kind\":\"object\",\"type\":\"Order\",\"relationName\":\"OrderToOrderItem\"},{\"name\":\"productId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"product\",\"kind\":\"object\",\"type\":\"Product\",\"relationName\":\"OrderItemToProduct\"},{\"name\":\"quantity\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"priceCents\",\"kind\":\"scalar\",\"type\":\"Int\"}],\"dbName\":\"order_items\"},\"SupportTicket\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"orderId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"subject\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"status\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"support_tickets\"},\"Notification\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"_id\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"message\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"link\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"isRead\",\"kind\":\"scalar\",\"type\":\"Boolean\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":\"notifications\"}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.engineWasm = {
   getRuntime: async () => require('./query_engine_bg.js'),

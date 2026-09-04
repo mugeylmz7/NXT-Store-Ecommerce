@@ -88,8 +88,8 @@ export async function requireAdmin(): Promise<Auth0SessionUser> {
 }
 
 export async function getAdmin(): Promise<Auth0SessionUser | null> {
-  const user = await requireUser();
-  if (isAdmin(user)) return user;
+  const user = await getSessionUser();
+  if (user && isAdmin(user)) return user;
   return null;
 }
 

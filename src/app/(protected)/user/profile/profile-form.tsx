@@ -53,16 +53,16 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
 
   return (
     <Tabs defaultValue="account" className="w-full">
-      <TabsList className="grid w-full grid-cols-2 mb-8">
-        <TabsTrigger value="account">Account</TabsTrigger>
-        <TabsTrigger value="address">Address</TabsTrigger>
+      <TabsList className="grid w-full grid-cols-2 mb-6 h-11 p-1 bg-muted rounded-xl">
+        <TabsTrigger value="account" className="rounded-lg text-xs sm:text-sm font-medium">Account</TabsTrigger>
+        <TabsTrigger value="address" className="rounded-lg text-xs sm:text-sm font-medium">Address</TabsTrigger>
       </TabsList>
 
       {/* 1. SEKME: HESAP BİLGİLERİ */}
-      <TabsContent value="account" className="border rounded-lg p-6 bg-card">
-        <h2 className="text-xl font-semibold mb-6">My Information</h2>
+      <TabsContent value="account" className="border border-border/80 rounded-2xl p-4 sm:p-6 bg-card shadow-sm">
+        <h2 className="text-base sm:text-lg font-bold mb-4 sm:mb-6 text-foreground">My Information</h2>
 
-        <form action={updateUserProfile} className="space-y-6">
+        <form action={updateUserProfile} className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <Label htmlFor="name">Name</Label>
             <Input
@@ -72,6 +72,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
               placeholder="Enter your name"
               required
               minLength={2}
+              className="h-10 text-sm" 
             />
           </div>
 
@@ -87,6 +88,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
               // Sıkı e-posta format doğrulaması (en az bir karakter + @ + en az bir karakter + . + en az iki karakter uzantı)
               pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}"
               title="Please enter a valid email address (e.g. name@domain.com)"
+              className="h-10 text-sm"
               onInput={(e) => {
                 // Kullanıcı yazarken boşluk veya geçersiz sembol girmeye çalışırsa anında siler:
                 e.currentTarget.value = cleanEmailInput(e.currentTarget.value);
@@ -96,7 +98,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
 
           <div className="pt-2">
             <Button
-              type="submit" variant="default"
+              type="submit" variant="default" className="w-full sm:w-auto rounded-xl px-6 h-10"
               onClick={(e) => {
                 // Formun geçerliliğini kontrol et
                 const form = e.currentTarget.closest("form");
@@ -113,10 +115,10 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
       </TabsContent>
 
       {/* 2. SEKME: ADRES BİLGİLERİ */}
-      <TabsContent value="address" className="border rounded-lg p-6 bg-card">
-        <h2 className="text-xl font-semibold mb-6">My Address</h2>
+      <TabsContent value="address" className="border border-border/80 rounded-2xl p-4 sm:p-6 bg-card shadow-sm">
+        <h2 className="text-base sm:text-lg font-bold mb-4 sm:mb-6 text-foreground">My Address</h2>
 
-        <form action={updateUserAddress} className="space-y-6">
+        <form action={updateUserAddress} className="space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <Label htmlFor="address">Address</Label>
             <Input
@@ -125,6 +127,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
               defaultValue={dbUser.address || ""}
               placeholder="Enter your address"
               required
+              className="h-10 text-sm"
             />
           </div>
 
@@ -137,6 +140,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
                 defaultValue={dbUser.city || ""}
                 placeholder="Enter your city"
                 required
+                className="h-10 text-sm"
               />
             </div>
 
@@ -149,6 +153,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
                 placeholder="e.g. 34000"
                 required
                 maxLength={5}
+                className="h-10 text-sm"
                 onInput={(e) => {
                   onlyNumbers(e); // Harf yazılmasını engeller
                   if (e.currentTarget.value.length > 5) {
@@ -168,6 +173,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
                 defaultValue={dbUser.country || ""}
                 placeholder="Enter your country"
                 required
+                className="h-10 text-sm"
               />
             </div>
 
@@ -180,6 +186,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
                 placeholder="e.g. 0555-444-33-22"
                 required
                 maxLength={14} // Tire işaretleri dahil olacağı için max uzunluğu 14 yapıyoruz (11 rakam + 3 tire)
+                className="h-10 text-sm"
                 onInput={(e) => {
                   onlyNumbers(e); // Harf yazılmasını engeller
                   // Girilen değeri anında maskelenmiş formata çeviriyoruz
@@ -191,7 +198,7 @@ export default function ProfileForm({ dbUser }: ProfileFormProps) {
 
           <div className="pt-2">
             <Button
-              type="submit" variant="default"
+              type="submit" variant="default" className="w-full sm:w-auto rounded-xl px-6 h-10"
               onClick={(e) => {
                 // Formun geçerliliğini kontrol et
                 const form = e.currentTarget.closest("form");

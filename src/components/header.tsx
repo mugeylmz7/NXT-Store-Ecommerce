@@ -4,50 +4,44 @@ import { Button } from "@/components/ui/button";
 import { ModeToggle } from "./mode-toggle";
 
 import { CartDropdown } from "./ui/cart-dropdown";
+import { NotificationDropdown } from "./ui/notification-dropdown";
+import { LogoutButton } from "./logout-button"; // İstemci bileşeni
 
 export default async function Header() {
   const user = await getSessionUser(); // Kullanıcı oturumunu kontrol ediyoruz
   const userIsAdmin = isAdmin(user); // Admin olup olmadığını kontrol ediyoruz
 
+
   return (
-    <header className="border-b bg-background">
+    <header className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
 
         {/* Sol Taraf: Logo */}
-        <Button variant="link" asChild>
-          <Link href="/" className="text-xl font-bold text-primary">
-            NXT Store
-          </Link>
-        </Button>
+        <Link href="/" className="text-lg sm:text-xl font-bold text-primary shrink-0">
+          NXT Store
+        </Link>
 
         {/* Sağ Taraf: Navigasyon ve Butonlar */}
-        <nav className="flex items-center gap-4">
+        <nav className="flex items-center gap-1.5 sm:gap-3">
           {user ? (
             <>
-              <span className="text-sm text-muted-foreground hidden sm:inline-block">
-                Hello, {user.name || user.email}
-              </span>
-
-              {userIsAdmin && (
-                <Button variant="link" asChild>
-                  <Link href="/admin" className="text-sm font-medium hover:underline dark:text-primary">
-                    Admin Dashboard
-                  </Link>
-                </Button>
-              )}
-
-              <Button variant="outline" asChild>
-                <a href="/auth/logout">Log out</a>
-              </Button>
+              {/* Çıkış Yaparken Sepeti Temizleyen Buton */}
+              <LogoutButton />
 
             </>
           ) : (
-            <Button asChild>
-              <a href="/auth/login">Log in / Sign up</a>
+            <Button asChild size="sm" className="text-xs sm:text-sm px-4 sm:px-4 rounded-xl">
+              <a href="/auth/login">
+              <span className="hidden sm:inline">Log in / Sign up</span>
+                <span className="sm:hidden ">Log in / Sign up</span>
+              </a>
             </Button>
           )}
           {/* Sağ Üst Kısım: Her Zaman Görünür Sepet ve Tema Değiştirici */}
-          <div className="flex items-center gap-2 pl-2 border-l border-border/40">
+          <div className="flex items-center gap-1 sm:gap-2 pl-1.5 sm:pl-2 border-l border-border/40">
+            {user && (
+              <NotificationDropdown userIsAdmin={userIsAdmin} />
+            )}
             <CartDropdown />
             <ModeToggle />
           </div>

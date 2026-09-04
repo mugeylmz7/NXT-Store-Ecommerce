@@ -140,8 +140,53 @@ exports.Prisma.UserScalarFieldEnum = {
   postalCode: 'postalCode',
   country: 'country',
   phone: 'phone',
+  role: 'role',
+  isSuspended: 'isSuspended',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderScalarFieldEnum = {
+  id: 'id',
+  stripeSessionId: 'stripeSessionId',
+  userId: 'userId',
+  userEmail: 'userEmail',
+  status: 'status',
+  cancelledBy: 'cancelledBy',
+  shippedAt: 'shippedAt',
+  cancelledAt: 'cancelledAt',
+  totalCents: 'totalCents',
+  currency: 'currency',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  productId: 'productId',
+  quantity: 'quantity',
+  priceCents: 'priceCents'
+};
+
+exports.Prisma.SupportTicketScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  subject: 'subject',
+  message: 'message',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  title: 'title',
+  message: 'message',
+  link: 'link',
+  isRead: 'isRead',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -168,9 +213,21 @@ exports.Category = exports.$Enums.Category = {
   OTHER: 'OTHER'
 };
 
+exports.OrderStatus = exports.$Enums.OrderStatus = {
+  PENDING: 'PENDING',
+  PAID: 'PAID',
+  SHIPPED: 'SHIPPED',
+  CANCELLED: 'CANCELLED',
+  DELIVERED: 'DELIVERED'
+};
+
 exports.Prisma.ModelName = {
   Product: 'Product',
-  User: 'User'
+  User: 'User',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  SupportTicket: 'SupportTicket',
+  Notification: 'Notification'
 };
 
 /**

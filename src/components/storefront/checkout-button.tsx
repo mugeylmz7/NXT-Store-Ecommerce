@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { addToCart, clearCart, getCart, removeFromCart } from "@/lib/cart-store";
-
+import { checkUserSuspendedAction } from "@/app/actions/user";
+import { createNotification } from "@/lib/notifications";
+import { sendSuspendedNotificationAction } from "@/app/actions/notifications"; // Server Action import edildi
+import { AlertTriangle, Link, Lock } from "lucide-react";
+import { useUser } from "@auth0/nextjs-auth0/client"; // Auth0'ın istemci hook'u eklendi
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "../ui/alert-dialog";
 
 interface CheckoutButtonProps {
   // Çoklu sepet için buraya dinamik sepet verisi alabilsin.
@@ -17,13 +22,18 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
   const [cartCount, setCartCount] = useState(0);
   const [isInCart, setIsInCart] = useState(false); // Ürün sepette mi kontrolü için
 
+  // 1. Giriş Yapılmamışsa Açılacak Dialog State'i
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
+  // 2. Hesabı ASKIDA İse Açılacak Dialog State'i
+  const [showSuspendedDialog, setShowSuspendedDialog] = useState(false);
+
+  // Normal Toast bildirimi için state
   const [toast, setToast] = useState({ show: false, msg: "", type: "success" as "success" | "info" | "error" });
 
-  // Özel Toast State'i (Göze hitap eden modern uyarılar için)
   const triggerToast = (msg: string, type: "success" | "info" | "error" = "success") => {
     setToast({ show: true, msg, type });
-    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 2500);
+    setTimeout(() => setToast(prev => ({ ...prev, show: false })), 5000);
   };
 
   useEffect(() => {
@@ -41,16 +51,32 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
     return () => window.removeEventListener("cart-updated", updateCartState);
   }, [productInfo?.stripePriceId, mode]);
 
-  const handleAddToCart = (e: React.FormEvent) => {
+
+  // Sepete Ekleme İşlemi (Tekil Ürün)
+  const handleAddToCart = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!productInfo?.stripePriceId) {
       triggerToast("Stripe price credentials missing!", "error");
       return;
     }
-    addToCart({ stripePriceId: productInfo.stripePriceId, quantity: 1, name: productInfo.name });
-    triggerToast(`Added ${productInfo.name} to cart! 👍`, "success");
-  };
+    try {
+    // Oturum Kontrolü
+    const isSuspended = await checkUserSuspendedAction();
 
+    // Kullanıcı giriş yapmamışsa (null döndüyse) AlertDialog'u aç ve 1.5 sn sonra login'e yönlendir
+    if (isSuspended === null) {
+      setShowAuthDialog(true);
+      return;
+    }
+
+    // Giriş yapılmışsa normal sepete ekle
+      addToCart({ stripePriceId: productInfo.stripePriceId, quantity: 1, name: productInfo.name });
+      triggerToast(`Added ${productInfo.name} to cart! 👍`, "success");
+    } catch (error) {
+      setShowAuthDialog(true);
+    }
+  };
 
   // Tekil ürün silme tetikleyicisi
   const handleRemoveItem = (e: React.FormEvent) => {
@@ -60,9 +86,11 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
     triggerToast(`Removed ${productInfo.name} from cart.`, "info");
   };
 
-  // 2. Durum: Sepetteki Tüm Ürünleri Topluca Ödemeye Gönderme Fonksiyonu
+// 2. Durum: Sepetteki Tüm Ürünleri Topluca Ödemeye Gönderme Fonksiyonu
   const handleCartCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    
     const currentCart = getCart();
 
     if (currentCart.length === 0) {
@@ -71,21 +99,40 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
     }
 
     setLoading(true);
+    
     try {
-      // Veriyi API'ye JSON formatında güvenle gönderiyoruz
+      // 1. OTURUM VE SUSPEND KONTROLÜ (Server Action Üzerinden)
+      const isSuspended = await checkUserSuspendedAction();
+
+      // Eğer kullanıcı giriş yapmamışsa (null / undefined dönerse)
+      if (isSuspended === null || isSuspended === undefined) {
+        setShowAuthDialog(true);
+        setLoading(false);
+        return;
+      }
+
+      // 2.Hesabı askıdaysa -> ÖNCE SEPETİ KAPAT, SONRA SUSPENDED DIALOG AÇ!
+      if (isSuspended === true) {
+        window.dispatchEvent(new Event("close-cart-dropdown")); // Sepet Popover'ını Kapatır
+        setShowSuspendedDialog(true);                           // AlertDialog'u Ekrana Getirir
+        triggerToast("Your purchase attempt was blocked because your account is suspended.", "error");
+        await sendSuspendedNotificationAction();
+        setLoading(false);
+        return;
+      }
+      // 3. Giriş yapmış ve aktif kullanıcı -> Stripe Checkout
       const response = await fetch('/api/stripe/checkout', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ cartItems: currentCart }), // Tüm sepet dizisi tek seferde gidiyor
+        body: JSON.stringify({ cartItems: currentCart }),
       });
 
       const data = await response.json();
 
       if (data.url) {
-        clearCart(); // Sepeti temizliyoruz, çünkü kullanıcı ödeme sayfasına yönlendiriliyor
-        // Stripe'ın çoklu ürün destekleyen güvenli ödeme sayfasına gönderiyoruz
+        // Sepet sadece ödeme başarılı tamamlanıp /checkout/success sayfasına gidildiğinde ClearCartOnSuccess bileşeni ile temizlenecek.
         window.location.href = data.url;
       } else {
         triggerToast(data.error || "Checkout failed", "error");
@@ -98,25 +145,104 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
     }
   };
 
-
-  // 3. Durum: Sepeti Tamamen Temizleme Fonksiyonu
   const handleClearCart = (e: React.FormEvent) => {
     e.preventDefault();
     clearCart();
-    // Sayfadaki sepet sayısını sıfırlamak için event'i tetikliyoruz
     window.dispatchEvent(new Event("cart-updated"));
     triggerToast("Your cart has been cleared!", "info");
   };
 
 
   return (
-    <>
+      <>
+      {/* 🌟 1. AUTHENTICATION REQUIRED DIALOG (Giriş Yapılmamışsa) */}
+      <AlertDialog open={showAuthDialog} onOpenChange={setShowAuthDialog}>
+        <AlertDialogContent className="max-w-md border border-border/80 bg-background/95 p-6 shadow-2xl backdrop-blur-xl sm:rounded-3xl z-[100] ">
+          <AlertDialogHeader className="flex flex-col items-center justify-center space-y-3 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+              <Lock className="h-7 w-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <AlertDialogTitle className="text-xl font-bold tracking-tight text-foreground">
+                Authentication Required
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                You need to log in to add products to your shopping cart and complete your order.
+              </AlertDialogDescription>
+            </div>
+          </AlertDialogHeader>
+
+          {/* Alt Buton Grubu (İki Butonlu Dengeli Düzen) */}
+          <AlertDialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
+            <AlertDialogCancel className="w-full rounded-xl border border-input bg-background hover:bg-accent hover:text-accent-foreground sm:w-1/2 cursor-pointer transition-all">
+              Continue Browsing
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                setShowAuthDialog(false);
+                window.location.href = "/auth/login";
+              }}
+              className="w-full rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-medium shadow-md sm:w-1/2 cursor-pointer transition-all"
+            >
+              Log In Now
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* 🌟 2. ACCOUNT SUSPENDED ALERT DIALOG (Hesap Askıdaysa Açılır) */}
+      <AlertDialog open={showSuspendedDialog} onOpenChange={setShowSuspendedDialog}>
+        <AlertDialogContent className="max-w-md border border-destructive/30 bg-background/95 p-6 shadow-2xl backdrop-blur-xl sm:rounded-3xl z-[100]">
+          <AlertDialogHeader className="flex flex-col items-center justify-center space-y-3 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10 text-destructive shadow-inner">
+              <AlertTriangle className="h-7 w-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <AlertDialogTitle className="text-xl font-bold tracking-tight text-destructive">
+                Account Suspended
+              </AlertDialogTitle>
+              <AlertDialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                Your purchase attempt was blocked because your account is currently suspended. Please contact our support team to resolve this issue.
+              </AlertDialogDescription>
+            </div>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-center">
+            <AlertDialogCancel className="w-full rounded-xl border border-input bg-background hover:bg-accent sm:w-1/2 cursor-pointer">
+              Close
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => {
+                setShowSuspendedDialog(false);
+                window.location.href = "/support";
+              }}
+              className="w-full rounded-xl bg-destructive hover:bg-destructive/90 text-destructive-foreground font-medium shadow-md sm:w-1/2 cursor-pointer"
+            >
+              Contact Support
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* TOAST ALANI - DÜZ HAREKET EDEN YAZI VE TIKLAMA YÖNLENDİRMESİ */}
       {toast.show && (
-        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-2xl border border-border/85 px-6 py-4 shadow-2xl min-w-[320px] max-w-md bg-background font-medium text-sm text-foreground transition-all duration-300">
-          <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white font-bold text-xs ${toast.type === "success" ? "bg-emerald-500 shadow-md" :
-              toast.type === "info" ? "bg-blue-500 shadow-md" :
-                "bg-destructive shadow-md"
-            }`}>
+        <div 
+          onClick={() => {
+            if (toast.type === "error") {
+              window.location.href = "/support";
+            }
+          }}
+          className={`fixed top-10 left-1/2 -translate-x-1/2 z-[110] flex items-center gap-3 rounded-2xl border border-border/85 px-6 py-4 shadow-2xl min-w-[320px] max-w-md bg-background font-medium text-sm text-foreground transition-all duration-300 ${
+            toast.type === "error" ? "cursor-pointer hover:border-destructive/50" : ""
+          }`}
+        >
+          <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-white font-bold text-xs ${
+            toast.type === "success" ? "bg-chart-2 shadow-md" :
+            toast.type === "info" ? "bg-blue-500 shadow-md" :
+            "bg-destructive shadow-md"
+          }`}>
             {toast.type === "success" ? "✓" : toast.type === "info" ? "i" : "!"}
           </div>
           <div className="flex flex-col gap-0.5">
@@ -129,13 +255,13 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
           </div>
         </div>
       )}
-
+      
       {/* MOD 1: SEPETE EKLE BUTONU (KART İÇİNDEKİ) */}
       {mode === "add-to-cart" && (
         <form onSubmit={handleAddToCart}>
           <Button
             type="submit"
-            variant="outline"
+            variant="default"
             className="w-full"
           >
             Add to Cart
@@ -143,7 +269,7 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
         </form>
       )}
 
-      {/* Eğer ürün sepetteyse görünecek olan kibar "Remove" butonu */}
+      {/* MOD 2: ÜRÜN SİLME BUTONU */}
       {mode === "remove-item" && isInCart && (
         <form onSubmit={handleRemoveItem}>
           <Button
@@ -156,7 +282,7 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
         </form>
       )}
 
-      {/* MOD 2: SEPETİ SIFIRLA BUTONU */}
+      {/* MOD 3: SEPETİ SIFIRLA BUTONU */}
       {mode === "clear-cart" && (
         <form onSubmit={handleClearCart} className="w-full">
           <Button
@@ -169,7 +295,7 @@ export function CheckoutButton({ mode, productInfo }: CheckoutButtonProps) {
         </form>
       )}
 
-      {/* MOD 3: PREMİUM CHECKOUT BUTTON (STRIPE TETİKLEYİCİ) */}
+      {/* MOD 4: PREMİUM CHECKOUT BUTTON (STRIPE TETİKLEYİCİ) */}
       {mode === "checkout-cart" && (
         <form onSubmit={handleCartCheckout} className="w-full">
           <Button

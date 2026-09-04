@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { stripe } from '@/lib/stripe';
 import { z } from 'zod';
+import { getSessionUser } from '@/lib/auth0-utils'; // Kullanıcı bilgisini almak için ekledik
 
 const CheckoutSchema = z.object({
   cartItems: z.array(
@@ -17,6 +18,9 @@ export async function POST(req: NextRequest) {
   try {
     const headersList = await headers()
     const origin = headersList.get('origin')
+
+    // Aktif kullanıcı oturumunu çekiyoruz
+    const user = await getSessionUser();
 
     // Sepette 1 ürün de olsa, 5 ürün de olsa hepsini tek seferde JSON olarak yakalıyoruz:
     const body = await req.json().catch(() => ({}));
@@ -37,10 +41,17 @@ export async function POST(req: NextRequest) {
       quantity: item.quantity,
     }));
 
-    
+
+    // Stripe Checkout Session oluşturma
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: 'payment',
+      // Auth0 kullanıcı ID'si 'sub' alanında tutulur
+      client_reference_id: (user as any)?.sub || (user as any)?.email || undefined,
+      metadata: {
+        userId: (user as any)?.sub || "",
+        userEmail: (user as any)?.email || "",
+      },
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/`,
     });

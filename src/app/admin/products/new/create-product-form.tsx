@@ -46,8 +46,7 @@ export function CreateProductForm() {
     <form
       key={formKey}
       action={formAction}
-      className="space-y-8"
-      encType="multipart/form-data"
+      className="space-y-8 pb-2 md:pb-80 lg:pb-2"
     >
       {state ? (
         <div
@@ -134,8 +133,9 @@ export function CreateProductForm() {
             Price is entered in major units and stored as <code>priceCents</code> in the database.
           </Typography>
         </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
+      
+      {/* MOBİL VE TABLET UYUMLU ESNEK GRİD */}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
           <FormField
             id="price"
             label="Price"
@@ -222,6 +222,7 @@ export function CreateProductForm() {
             accept={ACCEPTED_IMAGE_ACCEPT_ATTR}
             multiple
             required
+            className="cursor-pointer"
             aria-invalid={Boolean(fieldError(fieldErrors, "images"))}
           />
         </FormField>
@@ -237,7 +238,7 @@ export function CreateProductForm() {
           </p>
         </div>
 
-        <label className="flex items-center gap-3 text-sm">
+        <label className="flex items-center gap-3 text-sm cursor-pointer select-none">
           <input
             type="checkbox"
             name="isActive"
@@ -248,11 +249,12 @@ export function CreateProductForm() {
         </label>
       </section>
 
-        <div className="flex items-center gap-3 border-t border-border pt-6">
-        <Button type="submit" disabled={isPending}>
+      {/* ALT AKSİYON BUTONLARI */}
+        <div className="flex items-center gap-3 border-t border-border pt-6 mt-8">
+        <Button type="submit" disabled={isPending} className="rounded-xl px-6">
           {isPending ? "Creating product..." : "Create product"}
         </Button>
-        <Button asChild variant="outline" disabled={isPending}>
+        <Button asChild variant="outline" disabled={isPending} className="rounded-xl">
           <Link href="/admin/products">Cancel</Link>
         </Button>
       </div>

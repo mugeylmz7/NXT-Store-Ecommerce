@@ -59,18 +59,40 @@ function toProduct(record: PrismaProduct): Product {
 }
 
 export async function getStorefrontProducts(
-  _filters: GetStorefrontProductsFilters = {},
+  filters: GetStorefrontProductsFilters = {},
 ): Promise<Product[]> {
   try {
+    const { category, sort } = filters;
+
+    const whereCondition: any = {
+      isActive: true,
+    };
+
+    if (category && category !== "all") {
+      whereCondition.category = category;
+    }
+
+    // TypeScript hatasını önlemek için (sort as string) kullanıyoruz
+    let orderByCondition: any = { createdAt: "desc" };
+    const sortStr = sort as string | undefined;
+
+    if (sortStr === "price-asc" || sortStr === "price_asc") {
+      orderByCondition = { priceCents: "asc" };
+    } else if (sortStr === "price-desc" || sortStr === "price_desc") {
+      orderByCondition = { priceCents: "desc" };
+    } else if (sortStr === "name-asc" || sortStr === "name_asc") {
+      orderByCondition = { name: "asc" };
+    } else if (sortStr === "name-desc" || sortStr === "name_desc") {
+      orderByCondition = { name: "desc" };
+    }
+
     const records = await prisma.product.findMany({
-      where: {
-        isActive: true, // Anasayfada sadece aktif ürünleri göstermek için filtreleme
-      },
-      orderBy: { createdAt: "desc" },
+      where: whereCondition,
+      orderBy: orderByCondition,
     });
     return records.map(toProduct);
   } catch (error) {
-    console.error("An error occured when fetching all products from DB", error);
+    console.error("An error occured when fetching storefront products from DB", error);
     return [];
   }
 }
@@ -159,7 +181,7 @@ import { stripe } from "@/lib/stripe";
 // delete products
 export async function deleteProduct(id: string): Promise<void> {
   try {
-    // Ürünü Stripe üzerinde arşivliyoruz (active: false)
+    // 1. Ürünü DB'den bul ve Stripe bilgileri var mı kontrol et
     const product = await prisma.product.findUnique({ 
       where: { id } 
     });
@@ -178,8 +200,21 @@ export async function deleteProduct(id: string): Promise<void> {
     console.error(`Stripe archiving failed with id ${id}, moving on to DB deletion:`, stripeError);
   }
 
-  // Yerel veritabanından kalıcı olarak sil
+  // 2. Veritabanından (MongoDB) kaydı kalıcı olarak sil
   await prisma.product.delete({
     where: { id },
   });
+}
+
+
+// delete multiple products
+export async function deleteMultipleProducts(ids: string[]): Promise<void> {
+  for (const id of ids) {
+    try {
+      // Mevcut Stripe arşivleme ve DB silme mantığını her ürün için sırayla çağırır
+      await deleteProduct(id);
+    } catch (error) {
+      console.error(`Failed to delete product with id ${id} during bulk delete:`, error);
+    }
+  }
 }

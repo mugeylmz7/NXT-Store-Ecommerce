@@ -11,10 +11,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { getAdmin, getSessionUser } from "@/lib/auth0-utils";
+import { Bell, Headphones } from "lucide-react";
+import { prisma } from "@/lib/prisma";
 
 export async function Navbar() {
   const user = await getSessionUser();
   const admin = await getAdmin();
+  const db = prisma as any;
+
+  // Bildirim Kontrolü (Admin için açılmış açık destek talepleri)
+  let hasNotification = false;
+  if (user && admin && db) {
+    try {
+      if (db.supportTicket) {
+        const openTicketsCount = await db.supportTicket.count({
+          where: { status: "OPEN" },
+        });
+        hasNotification = openTicketsCount > 0;
+      }
+    } catch (e) {
+      console.error("Navbar notification error:", e);
+    }
+  }
 
   const displayName = user?.name ?? user?.email ?? "User";
   const initials = displayName
@@ -37,9 +55,40 @@ export async function Navbar() {
         <nav className="flex items-center gap-2">
           {user ? (
             <>
+            <Button asChild variant="ghost" size="icon" className="relative size-9">
+                <Link
+                  href={admin ? "/admin/tickets" : "/user/orders"}
+                  title={admin ? "Support Tickets" : "Notifications"}
+                >
+                  <Bell className="size-4 text-muted-foreground hover:text-foreground transition-colors" />
+                  {hasNotification && (
+                    <>
+                      <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-destructive animate-ping" />
+                      <span className="absolute top-1.5 right-1.5 size-2 rounded-full bg-destructive" />
+                    </>
+                  )}
+                </Link>
+              </Button>
+              
+              {/* Sadece Müşteriler İçin My Orders Linki (Admin Değilse) */}
+              {!admin && (
+                <Button asChild variant="ghost" size="sm">
+                  <Link href="/user/orders">My Orders</Link>
+                </Button>
+              )}
+
+              {/* Destek Linki */}
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/support" className="flex items-center gap-1.5">
+                  <Headphones className="size-3.5" />
+                  Support
+                </Link>
+              </Button>
+
+              {/* Admin Dashboard Butonu */}
               {admin ? (
                 <Button asChild variant="ghost" size="sm">
-                  <Link href="/admin/products">Admin</Link>
+                  <Link href="/admin/products">Admin Dashboard</Link>
                 </Button>
               ) : null}
 
@@ -74,9 +123,24 @@ export async function Navbar() {
                   <DropdownMenuItem asChild>
                     <Link href="/profile">Profile</Link>
                   </DropdownMenuItem>
+                  
+                  {/* Dropdown İçi de Sadece Normal Müşteriye Gösterilir */}
+                  {!admin && (
+                    <DropdownMenuItem asChild>
+                      <Link href="/user/orders">My Orders</Link>
+                    </DropdownMenuItem>
+                  )}
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/support" className="flex items-center gap-2">
+                      <Headphones className="size-3.5" />
+                      Support & Help
+                    </Link>
+                  </DropdownMenuItem>
+
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <a href="/auth/logout">Log out</a>
+                    <a href="/logout">Log out</a>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
