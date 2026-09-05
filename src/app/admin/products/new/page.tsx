@@ -20,9 +20,9 @@ export default async function NewProductPage({ searchParams }: NewProductPagePro
     : createdParam;
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 py-10">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+    <main className="container max-w-5xl mx-auto space-y-6 p-6 pb-8">
+      <div className="space-y-1">
+        <h1 className=" font-bold tracking-tight text-foreground">
           Create product
         </h1>
         <p className="text-sm text-muted-foreground">

@@ -20,7 +20,7 @@ export default function ForbiddenPage() {
           </Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/login">
+          <Link href="/auth/login">
             Login
           </Link>
         </Button>

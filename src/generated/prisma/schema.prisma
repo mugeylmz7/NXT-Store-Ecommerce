@@ -29,22 +29,91 @@ model Product {
   stripeProductId String? // Stripe için yeni eklenen alanlar (isteğe bağlı/optional yapıyoruz ki mevcut veriler patlamasın)
   stripePriceId   String?
 
+  orderItems OrderItem[]
+
   @@map("products")
 }
 
 // Yeni ekleyeceğimiz User modeli (Profil bilgilerini tutmak için):
 model User {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  auth0Id    String   @unique // Auth0'dan gelen benzersiz kullanıcı ID'si
-  email      String   @unique
-  name       String?
-  address    String?
-  city       String?
-  postalCode String?
-  country    String?
-  phone      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  auth0Id     String   @unique // Auth0'dan gelen benzersiz kullanıcı ID'si
+  email       String   @unique
+  name        String?
+  address     String?
+  city        String?
+  postalCode  String?
+  country     String?
+  phone       String?
+  role        String   @default("USER") // USER veya ADMIN
+  isSuspended Boolean  @default(false) // Askıya alınma durumu
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders Order[]
+}
+
+model Order {
+  id              String      @id @default(auto()) @map("_id") @db.ObjectId
+  stripeSessionId String?     @unique
+  userId          String?     @db.ObjectId
+  user            User?       @relation(fields: [userId], references: [id])
+  userEmail       String? // Email gönderme
+  status          OrderStatus @default(PENDING)
+  cancelledBy     String? // "USER" veya "ADMIN" (İptal edeni takip etmek için)
+  shippedAt       DateTime? // Kargoya verilme tarihi
+  cancelledAt     DateTime? // İptal edilme tarihi
+  totalCents      Int
+  currency        Currency    @default(EUR)
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String  @id @default(auto()) @map("_id") @db.ObjectId
+  orderId    String  @db.ObjectId
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId  String  @db.ObjectId
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  priceCents Int
+
+  @@map("order_items")
+}
+
+model SupportTicket {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String?
+  subject   String
+  message   String
+  status    String   @default("OPEN") // "OPEN" veya "RESOLVED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("support_tickets")
+}
+
+model Notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String // Bildirimin gideceği kullanıcının ID/Email'i veya Adminler için "ADMIN"
+  title     String
+  message   String
+  link      String // Tıklayınca gidilecek yol (/admin/users, /admin/tickets, /user/orders vs.)
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+enum OrderStatus {
+  PENDING // Sipariş Alındı / Beklemede
+  PAID // Ödendi / Hazırlanıyor
+  SHIPPED // Kargoda
+  CANCELLED // İptal Edildi
+  DELIVERED // Teslim Edildi
 }
 
 enum Currency {

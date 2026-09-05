@@ -4,9 +4,21 @@ export type CartItem = {
   name?: string; // Görsel kolaylık için
 };
 
+
+// Aktif oturum açan kullanıcının sepet key'ini dinamik belirler
+const getCartKey = (): string => {
+  if (typeof window === "undefined") return "shopping-cart-guest";
+  
+  // Auth0 veya session'dan saklanan aktif kullanıcı ID/email bilgisini alıyoruz
+  const activeUser = localStorage.getItem("current_user_email") || "guest";
+  return `shopping-cart_${activeUser}`;
+};
+
+
 export const getCart = (): CartItem[] => {
   if (typeof window === "undefined") return [];
-  const cart = localStorage.getItem("shopping-cart");
+  const cartKey = getCartKey();
+  const cart = localStorage.getItem(cartKey);
   return cart ? JSON.parse(cart) : [];
 };
 
@@ -21,23 +33,34 @@ export const addToCart = (item: CartItem) => {
     cart.push(item);
   }
 
-  localStorage.setItem("shopping-cart", JSON.stringify(cart));
-  // Sayfadaki sepet sayılarının güncellenmesi için küçük bir event tetikliyoruz
+  const cartKey = getCartKey();
+  localStorage.setItem(cartKey, JSON.stringify(cart));
+  // Sayfadaki sepet sayılarının güncellenmesi için event tetikliyoruz
   window.dispatchEvent(new Event("cart-updated"));
 };
 
 export const clearCart = () => {
   if (typeof window === "undefined") return;
-  localStorage.removeItem("shopping-cart");
+  const cartKey = getCartKey();
+  localStorage.removeItem(cartKey);
+  window.dispatchEvent(new Event("cart-updated"));
 };
 
-// Sepetten sadece seçilen ürünü silen fonksiyon
+// Sepetten sadece seçilen ürünü silen/adet azaltan fonksiyon
 export const removeFromCart = (stripePriceId: string) => {
   if (typeof window === "undefined") return;
-  const cart = getCart();
-  // Silinmek istenen ID dışındaki tüm ürünleri filtrele
-  const filteredCart = cart.filter((item) => item.stripePriceId !== stripePriceId);
-  
-  localStorage.setItem("shopping-cart", JSON.stringify(filteredCart));
+  let cart = getCart();
+  const existingItem = cart.find((item) => item.stripePriceId === stripePriceId);
+ 
+  if (existingItem) {
+    if (existingItem.quantity > 1) {
+      existingItem.quantity -= 1;
+    } else {
+      cart = cart.filter((item) => item.stripePriceId !== stripePriceId);
+    }
+  }
+
+  const cartKey = getCartKey();
+  localStorage.setItem(cartKey, JSON.stringify(cart));
   window.dispatchEvent(new Event("cart-updated"));
 };
