@@ -17,6 +17,8 @@ export const metadata = {
   title: "User Management | Admin Dashboard",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminUsersPage() {
   const db = prisma as any;
   const currentUser = await getSessionUser();

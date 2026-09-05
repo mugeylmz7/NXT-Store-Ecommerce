@@ -3,14 +3,29 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { createNotification } from "@/lib/notifications";
+import { requireAdmin } from "@/lib/auth0-utils";
 
 // Kullanıcıyı askıya alma veya askıdan çıkarma
 export async function toggleUserSuspensionAction(userId: string, suspend: boolean) {
+  
   try {
+    // Admin güvenlik kontrolü
+    await requireAdmin();
+
     const db = prisma as any;
 
     if (!db.user) {
       return { success: false, error: "User model not found." };
+    }
+
+    // Eğer suspend parametresi açıkça gönderilmediyse mevcut durumun tersini alıyoruz
+    let nextSuspendState = suspend;
+    if (nextSuspendState === undefined) {
+      const currentUser = await db.user.findUnique({
+        where: { id: userId },
+        select: { isSuspended: true },
+      });
+      nextSuspendState = !currentUser?.isSuspended;
     }
 
     const updatedUser = await db.user.update({

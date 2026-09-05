@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export async function SuspendedBanner() {
   const sessionUser = await getSessionUser();
   if (!sessionUser) return null;

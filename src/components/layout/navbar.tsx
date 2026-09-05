@@ -14,6 +14,8 @@ import { getAdmin, getSessionUser } from "@/lib/auth0-utils";
 import { Bell, Headphones } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 export async function Navbar() {
   const user = await getSessionUser();
   const admin = await getAdmin();

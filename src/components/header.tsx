@@ -7,6 +7,8 @@ import { CartDropdown } from "./ui/cart-dropdown";
 import { NotificationDropdown } from "./ui/notification-dropdown";
 import { LogoutButton } from "./logout-button"; // İstemci bileşeni
 
+export const dynamic = "force-dynamic";
+
 export default async function Header() {
   const user = await getSessionUser(); // Kullanıcı oturumunu kontrol ediyoruz
   const userIsAdmin = isAdmin(user); // Admin olup olmadığını kontrol ediyoruz

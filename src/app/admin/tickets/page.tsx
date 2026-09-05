@@ -15,6 +15,8 @@ export const metadata = {
   title: "Support Tickets | Admin Dashboard",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminTicketsPage() {
   const db = prisma as any;
   let tickets: any[] = [];

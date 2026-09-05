@@ -5,6 +5,7 @@ import { stripe } from '@/lib/stripe';
 import { z } from 'zod';
 import { getSessionUser } from '@/lib/auth0-utils'; // Kullanıcı bilgisini almak için ekledik
 
+
 const CheckoutSchema = z.object({
   cartItems: z.array(
     z.object({

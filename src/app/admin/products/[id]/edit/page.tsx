@@ -14,7 +14,7 @@ type EditProductPageProps = {
   params: Promise<{ id: string }>;
 };
 
-
+export const dynamic = "force-dynamic";
 
 export default async function EditProductPage({ params }: EditProductPageProps) {
   const resolvedParams = await params;

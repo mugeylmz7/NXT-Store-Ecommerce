@@ -19,6 +19,8 @@ export const metadata = {
   title: "Checkout Successful | NXT Store",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {

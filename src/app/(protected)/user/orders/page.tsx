@@ -20,6 +20,8 @@ export const metadata = {
   title: "My Orders | NXT Store",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function UserOrdersPage() {
   const user = await getSessionUser();
   const admin = await getAdmin(); // 1. EKSİK OLAN SATIR EKLENDİ

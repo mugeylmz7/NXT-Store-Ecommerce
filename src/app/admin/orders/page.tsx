@@ -19,6 +19,8 @@ export const metadata = {
   title: "Manage Orders | Admin Dashboard",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminOrdersPage() {
   const db = await prisma as any;
   let orders: any[] = [];

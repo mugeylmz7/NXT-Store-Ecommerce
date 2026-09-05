@@ -10,6 +10,7 @@ import ProfileForm from "./profile-form";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 
+export const dynamic = "force-dynamic";
 
 export default async function ProfilePage() {
   const user = await getSessionUser();
